@@ -73,6 +73,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.next/
 
 # Unit test / coverage reports
 htmlcov/

@@ -56,14 +56,19 @@ export function useAuth() {
   const logout = async () => {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-      await fetch(`${baseUrl}/api/logout`, {
+      // In Payload 3, the logout endpoint is /api/users/logout
+      await fetch(`${baseUrl}/api/users/logout`, {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
       setUser(null)
       router.push('/login')
       router.refresh()
     } catch (err) {
+      console.error('Logout error:', err)
       setError(err instanceof Error ? err.message : 'Logout failed')
     }
   }

@@ -69,6 +69,7 @@ export interface Config {
     menu: Menu;
     media: Media;
     users: User;
+    'water-entries': WaterEntry;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -78,6 +79,7 @@ export interface Config {
     menu: MenuSelect<false> | MenuSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'water-entries': WaterEntriesSelect<false> | WaterEntriesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -182,6 +184,32 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "water-entries".
+ */
+export interface WaterEntry {
+  id: number;
+  /**
+   * Amount of water consumed
+   */
+  amount: number;
+  /**
+   * Unit of measurement
+   */
+  unit: 'ml' | 'oz' | 'cup';
+  /**
+   * When the water was consumed
+   */
+  time: string;
+  /**
+   * Total amount in milliliters (calculated field)
+   */
+  totalMilliliters?: number | null;
+  user: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -198,6 +226,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'water-entries';
+        value: number | WaterEntry;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -298,6 +330,19 @@ export interface UsersSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "water-entries_select".
+ */
+export interface WaterEntriesSelect<T extends boolean = true> {
+  amount?: T;
+  unit?: T;
+  time?: T;
+  totalMilliliters?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

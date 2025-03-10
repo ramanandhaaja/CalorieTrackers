@@ -14,6 +14,8 @@ import ContactInfo from '../../components/ContactInfo'
 import Footer from '../../components/Footer'
 import Header from '../../components/Header'
 import Menu from '../../components/Menu'
+import HowItWorks from '../../components/HowItWorks'
+import Pricing from '../../components/Pricing'
 
 export default async function HomePage() {
   const headers = await getHeaders()
@@ -32,11 +34,17 @@ export default async function HomePage() {
       {/* Menu Section */}
       <Menu />
 
+      {/* How It Works Section */}
+      <HowItWorks />
+
       {/* About Us Section */}
       <AboutUs />
 
       {/* Testimonials Section */}
       <Testimonials />
+
+      {/* Pricing Section */}
+      <Pricing />
 
       {/* Gallery Section */}
       <Gallery />

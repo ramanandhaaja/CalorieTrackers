@@ -7,10 +7,12 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
+import Logo from './components/admin/Logo'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Menu } from './collections/Menu'
-import Logo from './components/admin/Logo'
+import { Water } from './collections/Water'
+import { Food } from './collections/Food'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -27,7 +29,7 @@ export default buildConfig({
       },
     },
   },
-  collections: [Menu, Media, Users],
+  collections: [Menu, Media, Users, Water, Food],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
