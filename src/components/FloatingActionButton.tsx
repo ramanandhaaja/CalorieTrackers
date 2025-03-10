@@ -22,15 +22,42 @@ export default function FloatingActionButton() {
   };
 
   const handleSubmitFood = (foodData: FoodData) => {
-    // Here you would typically send this data to your backend
-    console.log('Food data submitted:', foodData);
-    // You could also update local state or trigger a refetch of data
+    try {
+      // The FoodEntryModal already sends the data to the backend,
+      // so we only need to dispatch the event here
+      console.log('Food data received from modal:', foodData);
+      
+      // Dispatch a custom event to notify other components
+      const foodAddedEvent = new CustomEvent('food-added');
+      window.dispatchEvent(foodAddedEvent);
+    } catch (error) {
+      console.error('Error handling food data:', error);
+    }
   };
   
-  const handleSubmitWater = (waterData: WaterData) => {
-    // Here you would typically send this data to your backend
-    console.log('Water data submitted:', waterData);
-    // You could also update local state or trigger a refetch of data
+  const handleSubmitWater = async (waterData: WaterData) => {
+    try {
+      // Send the data to the backend
+      const response = await fetch('/api/water', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(waterData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add water');
+      }
+      
+      console.log('Water data submitted successfully:', waterData);
+      
+      // Dispatch a custom event to notify other components
+      const waterAddedEvent = new CustomEvent('water-added');
+      window.dispatchEvent(waterAddedEvent);
+    } catch (error) {
+      console.error('Error submitting water data:', error);
+    }
   };
 
   const toggleExpand = () => {

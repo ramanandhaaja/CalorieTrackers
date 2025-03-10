@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
+import { toast } from 'sonner';
 
 type WaterEntryModalProps = {
   isOpen: boolean;
@@ -29,6 +30,7 @@ const CONVERSION_FACTORS = {
 export default function WaterEntryModal({ isOpen, onClose, onSubmit }: WaterEntryModalProps) {
   const [waterData, setWaterData] = useState<WaterData>(initialWaterData);
   const [presetSelected, setPresetSelected] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -48,12 +50,41 @@ export default function WaterEntryModal({ isOpen, onClose, onSubmit }: WaterEntr
     setPresetSelected(`${amount}${unit}`);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(waterData);
-    setWaterData(initialWaterData);
-    setPresetSelected(null);
-    onClose();
+    setIsSubmitting(true);
+    
+    try {
+      // Call the API endpoint using direct transaction
+      const response = await fetch('/api/water', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(waterData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add water entry');
+      }
+      
+      const result = await response.json();
+      
+      // Call the onSubmit prop with the result
+      onSubmit(waterData);
+      toast.success('Water entry added successfully!');
+      
+      // Reset form
+      setWaterData(initialWaterData);
+      setPresetSelected(null);
+      onClose();
+    } catch (error) {
+      console.error('Error adding water entry:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add water entry');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Calculate total ml for display
@@ -187,14 +218,16 @@ export default function WaterEntryModal({ isOpen, onClose, onSubmit }: WaterEntr
               onClick={onClose}
               variant="outline"
               className="border-cyan-200 text-cyan-700 hover:bg-cyan-50"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button 
               type="submit"
               className="bg-cyan-500 hover:bg-cyan-600 text-white"
+              disabled={isSubmitting}
             >
-              Add Water
+              {isSubmitting ? 'Adding...' : 'Add Water'}
             </Button>
           </div>
         </form>

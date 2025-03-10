@@ -70,6 +70,7 @@ export interface Config {
     media: Media;
     users: User;
     'water-entries': WaterEntry;
+    'food-entries': FoodEntry;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -80,6 +81,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'water-entries': WaterEntriesSelect<false> | WaterEntriesSelect<true>;
+    'food-entries': FoodEntriesSelect<false> | FoodEntriesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -210,6 +212,77 @@ export interface WaterEntry {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "food-entries".
+ */
+export interface FoodEntry {
+  id: number;
+  /**
+   * Name of the food item
+   */
+  name: string;
+  /**
+   * Portion size (e.g., "1 cup (250g)")
+   */
+  portion: string;
+  /**
+   * Calories in the food item
+   */
+  calories: number;
+  /**
+   * Protein content in grams
+   */
+  protein: number;
+  /**
+   * Carbohydrate content in grams
+   */
+  carbs: number;
+  /**
+   * Fat content in grams
+   */
+  fat: number;
+  /**
+   * Type of meal
+   */
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  /**
+   * When the food was consumed
+   */
+  date: string;
+  user: number | User;
+  /**
+   * Calculated macronutrient totals
+   */
+  totalMacros?: {
+    /**
+     * Calories from protein (4 calories per gram)
+     */
+    caloriesFromProtein?: number | null;
+    /**
+     * Calories from carbohydrates (4 calories per gram)
+     */
+    caloriesFromCarbs?: number | null;
+    /**
+     * Calories from fat (9 calories per gram)
+     */
+    caloriesFromFat?: number | null;
+    /**
+     * Percentage of calories from protein
+     */
+    proteinPercentage?: number | null;
+    /**
+     * Percentage of calories from carbohydrates
+     */
+    carbsPercentage?: number | null;
+    /**
+     * Percentage of calories from fat
+     */
+    fatPercentage?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -230,6 +303,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'water-entries';
         value: number | WaterEntry;
+      } | null)
+    | ({
+        relationTo: 'food-entries';
+        value: number | FoodEntry;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -341,6 +418,33 @@ export interface WaterEntriesSelect<T extends boolean = true> {
   time?: T;
   totalMilliliters?: T;
   user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "food-entries_select".
+ */
+export interface FoodEntriesSelect<T extends boolean = true> {
+  name?: T;
+  portion?: T;
+  calories?: T;
+  protein?: T;
+  carbs?: T;
+  fat?: T;
+  mealType?: T;
+  date?: T;
+  user?: T;
+  totalMacros?:
+    | T
+    | {
+        caloriesFromProtein?: T;
+        caloriesFromCarbs?: T;
+        caloriesFromFat?: T;
+        proteinPercentage?: T;
+        carbsPercentage?: T;
+        fatPercentage?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

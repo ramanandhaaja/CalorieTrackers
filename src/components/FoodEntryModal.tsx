@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
+import { toast } from 'sonner';
 
 type FoodEntryModalProps = {
   isOpen: boolean;
@@ -29,6 +30,10 @@ const initialFoodData: FoodData = {
 
 export default function FoodEntryModal({ isOpen, onClose, onSubmit }: FoodEntryModalProps) {
   const [foodData, setFoodData] = useState<FoodData>(initialFoodData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Daily calorie goal - could be made configurable in the future
+  const DAILY_CALORIE_GOAL = 2000;
 
   if (!isOpen) return null;
 
@@ -43,17 +48,46 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit }: FoodEntryM
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(foodData);
-    setFoodData(initialFoodData);
-    onClose();
+    setIsSubmitting(true);
+    
+    try {
+      // Call the API endpoint
+      const response = await fetch('/api/food', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(foodData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add food entry');
+      }
+      
+      const result = await response.json();
+      
+      // Call the onSubmit prop with the result
+      onSubmit(foodData);
+      toast.success('Food entry added successfully!');
+      
+      // Reset form
+      setFoodData(initialFoodData);
+      onClose();
+    } catch (error) {
+      console.error('Error adding food entry:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add food entry');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 overflow-hidden">
-        <div className="border-b border-gray-100 px-5 py-4 flex justify-between items-center">
+        <div className="border-b border-gray-100 px-5 py-4 flex justify-between items-center bg-green-50">
           <h2 className="text-lg font-medium text-gray-900">Add Food</h2>
           <button 
             onClick={onClose}
@@ -184,6 +218,23 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit }: FoodEntryM
             </div>
           </div>
           
+          {/* Summary display */}
+          <div className="bg-green-50 p-3 rounded-md mt-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-green-800">Total calories:</span>
+              <span className="text-lg font-semibold text-green-900">{foodData.calories} kcal</span>
+            </div>
+            <div className="mt-1 h-3 bg-white rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-green-500 transition-all duration-300" 
+                style={{ width: `${Math.min(100, (foodData.calories / DAILY_CALORIE_GOAL) * 100)}%` }}
+              ></div>
+            </div>
+            <p className="text-xs text-green-700 mt-1">
+              Daily goal: {DAILY_CALORIE_GOAL} kcal
+            </p>
+          </div>
+          
           <div className="flex justify-end space-x-3 pt-3">
             <Button 
               type="button" 
@@ -192,8 +243,8 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit }: FoodEntryM
             >
               Cancel
             </Button>
-            <Button type="submit">
-              Add Food
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Adding...' : 'Add Food'}
             </Button>
           </div>
         </form>

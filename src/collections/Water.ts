@@ -88,23 +88,20 @@ export const Water: CollectionConfig = {
     {
       name: 'totalMilliliters',
       type: 'number',
+      label: 'Total Milliliters',
+      defaultValue: 0, // Provide a default value to avoid validation errors
       admin: {
         description: 'Total amount in milliliters (calculated field)',
         readOnly: true,
       },
       hooks: {
-        beforeValidate: [
+        beforeChange: [ // Change from beforeValidate to beforeChange
           ({ data }) => {
-            if (!data || !data.amount || !data.unit) return data;
+            if (!data || !data.amount || !data.unit) return 0; // Return a default value
             
             // Calculate total ml using the conversion factors
             const unit = data.unit as WaterUnit;
-            const totalMl = Math.round(data.amount * CONVERSION_FACTORS[unit]);
-            
-            return {
-              ...data,
-              totalMilliliters: totalMl,
-            };
+            return Math.round(data.amount * CONVERSION_FACTORS[unit]);
           },
         ],
       },
