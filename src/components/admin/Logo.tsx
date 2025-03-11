@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Logo: React.FC = () => {
+const Logo: React.FC<Record<string, any>> = (props) => {
   return (
     <div style={{ 
       fontSize: '36px', 

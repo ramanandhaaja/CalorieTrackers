@@ -25,7 +25,7 @@ export default buildConfig({
     },
     components: {
       graphics: {
-        Logo: Logo,
+        Logo: Logo as any, // Type assertion to resolve the type mismatch
       },
     },
   },
