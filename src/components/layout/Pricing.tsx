@@ -69,10 +69,10 @@ export default function Pricing() {
 
         <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0 xl:grid-cols-3">
           {tiers.map((tier) => (
-            <div key={tier.name} className={`bg-white rounded-lg shadow-md divide-y divide-gray-200 ${tier.mostPopular ? 'ring-2 ring-emerald-500' : ''}`}>
+            <div key={tier.name} className={`relative bg-white rounded-lg shadow-md divide-y divide-gray-200 ${tier.mostPopular ? 'ring-2 ring-emerald-500' : ''}`}>
               <div className="p-6">
                 {tier.mostPopular && (
-                  <p className="absolute top-0 transform -translate-y-1/2 bg-emerald-500 rounded-full px-4 py-1 text-sm font-semibold text-white">
+                  <p className="absolute top-0 left-1/2 transform -translate-y-1/2 -translate-x-1/2 bg-emerald-500 rounded-full px-4 py-1 text-sm font-semibold text-white">
                     Most popular
                   </p>
                 )}
