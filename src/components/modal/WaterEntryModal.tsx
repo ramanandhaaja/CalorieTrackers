@@ -170,7 +170,7 @@ export default function WaterEntryModal({ isOpen, onClose, onSubmit }: WaterEntr
                 name="unit"
                 value={waterData.unit}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-500 appearance-none bg-white"
                 required
               >
                 <option value="ml">Milliliters (ml)</option>
