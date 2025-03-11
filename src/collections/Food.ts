@@ -7,7 +7,7 @@ export const Food: CollectionConfig = {
   slug: 'food-entries',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'calories', 'mealType', 'user', 'createdAt'],
+    defaultColumns: ['name', 'calories', 'mealType', 'user', 'date', 'createdAt'],
     group: 'User Content',
   },
   access: {

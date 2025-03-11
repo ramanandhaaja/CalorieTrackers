@@ -1,8 +1,8 @@
 import React from 'react'
 import { Metadata } from 'next'
-import Header from '../../../components/Header'
-import Footer from '../../../components/Footer'
-import RegisterForm from '../../../components/RegisterForm'
+import Header from '../../../components/layout/Header'
+import Footer from '../../../components/layout/Footer'
+import RegisterForm from '../../../components/layout/RegisterForm'
 
 export const metadata: Metadata = {
   title: 'Register | Calorie Trackers',

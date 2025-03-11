@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import FoodEntryModal, { FoodData } from './FoodEntryModal';
-import WaterEntryModal, { WaterData } from './WaterEntryModal';
+import FoodEntryModal, { FoodData } from '../modal/FoodEntryModal';
+import WaterEntryModal, { WaterData } from '../modal/WaterEntryModal';
 
 export default function FloatingActionButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);

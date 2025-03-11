@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useFoodEntries, MealType } from '@/hooks/useFoodEntries';
-import type { FoodEntry } from '../payload-types';
-import FoodEntryModal, { FoodData } from './FoodEntryModal';
+import type { FoodEntry } from '../../payload-types';
+import FoodEntryModal, { FoodData } from '../modal/FoodEntryModal';
 
 // Emoji map for meal types
 const MEAL_TYPE_EMOJIS: Record<MealType, string> = {
@@ -21,7 +21,11 @@ const MEAL_TYPE_COLORS: Record<MealType, { bg: string, text: string, dot: string
   snack: { bg: 'bg-amber-50', text: 'text-amber-500', dot: 'bg-amber-500' }
 };
 
-export default function FoodEntriesWidget() {
+interface FoodEntriesWidgetProps {
+  onFoodEntriesUpdated?: () => void;
+}
+
+export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesWidgetProps) {
   const { 
     mealGroups,
     mealTotals,
@@ -38,6 +42,11 @@ export default function FoodEntriesWidget() {
     const handleFoodAdded = () => {
       console.log('Food added event received, refreshing data...');
       refreshFoodEntries();
+      
+      // Notify parent component that food entries have been updated
+      if (onFoodEntriesUpdated) {
+        onFoodEntriesUpdated();
+      }
     };
     
     // Add event listener
@@ -47,7 +56,7 @@ export default function FoodEntriesWidget() {
     return () => {
       window.removeEventListener('food-added', handleFoodAdded);
     };
-  }, [refreshFoodEntries]);
+  }, [refreshFoodEntries, onFoodEntriesUpdated]);
 
   const handleAddFood = () => {
     // Open the food entry modal
@@ -63,6 +72,11 @@ export default function FoodEntriesWidget() {
     // We just need to refresh the food entries data
     console.log('Food submitted from modal:', foodData);
     refreshFoodEntries();
+    
+    // Notify parent component that food entries have been updated
+    if (onFoodEntriesUpdated) {
+      onFoodEntriesUpdated();
+    }
   };
 
   // Render a single food entry

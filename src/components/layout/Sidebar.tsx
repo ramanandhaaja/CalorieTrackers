@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from './SidebarContext';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 interface SidebarProps {
   username: string;
@@ -73,9 +73,9 @@ export default function Sidebar({ username }: SidebarProps) {
               </li>
               <li>
                 <Link 
-                  href="/meals" 
+                  href="/dashboard/meals" 
                   className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                    pathname === '/meals' 
+                    pathname === '/dashboard/meals' 
                       ? 'bg-blue-50 text-blue-700' 
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}

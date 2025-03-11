@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useWaterIntake } from '@/hooks/useWaterIntake';
-import WaterEntryModal from './WaterEntryModal';
+import WaterEntryModal from '../modal/WaterEntryModal';
 
 export default function WaterIntakeWidget() {
   const { 
