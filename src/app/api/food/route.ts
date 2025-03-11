@@ -90,6 +90,82 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// PUT handler to update a food entry
+export async function PUT(req: NextRequest) {
+  try {
+    const payload = await getPayload({ config: await config });
+    const body = await req.json();
+    
+    // Validate required fields
+    if (!body.id || !body.name || !body.portion || body.calories === undefined || 
+        body.protein === undefined || body.carbs === undefined || body.fat === undefined || 
+        !body.mealType) {
+      return NextResponse.json(
+        { error: 'Missing required fields: id, name, portion, calories, protein, carbs, fat, and mealType are required' },
+        { status: 400 }
+      );
+    }
+    
+    // For now, we'll use a mock user ID for testing
+    // In production, you would implement proper authentication
+    const mockUserId = 1;
+    
+    // Update the food entry
+    const updatedFoodEntry = await payload.update({
+      collection: 'food-entries',
+      id: body.id,
+      data: {
+        name: body.name,
+        portion: body.portion,
+        calories: Number(body.calories),
+        protein: Number(body.protein),
+        carbs: Number(body.carbs),
+        fat: Number(body.fat),
+        mealType: body.mealType,
+        // Don't update the date or user fields
+      },
+    });
+    
+    return NextResponse.json(updatedFoodEntry, { status: 200 });
+  } catch (error) {
+    console.error('Error updating food entry:', error);
+    return NextResponse.json(
+      { error: `Error updating food entry: ${error instanceof Error ? error.message : String(error)}` },
+      { status: 400 }
+    );
+  }
+}
+
+// DELETE handler to delete a food entry
+export async function DELETE(req: NextRequest) {
+  try {
+    const payload = await getPayload({ config: await config });
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Missing required parameter: id' },
+        { status: 400 }
+      );
+    }
+    
+    // Delete the food entry
+    const deletedFoodEntry = await payload.delete({
+      collection: 'food-entries',
+      id: Number(id), // Convert string ID to number
+    });
+    
+    return NextResponse.json({ success: true, deletedEntry: deletedFoodEntry }, { status: 200 });
+  } catch (error) {
+    console.error('Error deleting food entry:', error);
+    return NextResponse.json(
+      { error: `Error deleting food entry: ${error instanceof Error ? error.message : String(error)}` },
+      { status: 400 }
+    );
+  }
+}
+
 // GET handler to fetch food entries for today
 export async function GET(req: NextRequest) {
   // Check if we're requesting weekly data or historical data

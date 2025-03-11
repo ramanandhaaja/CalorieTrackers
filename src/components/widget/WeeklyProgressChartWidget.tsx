@@ -207,25 +207,25 @@ const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="border-b border-gray-100 px-5 py-4 flex justify-between items-center">
-        <h2 className="text-base font-medium text-gray-900">Weekly Progress</h2>
+        <h2 className="text-xl font-medium text-gray-900">Weekly Progress</h2>
         <div className="flex">
-          <button className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md mr-2">Calories</button>
-          <button className="text-xs font-medium text-blue-500 bg-blue-50 px-2 py-1 rounded-md">Macros</button>
+          <button className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md mr-2">Calories</button>
+          <button className="text-sm font-medium text-blue-500 bg-blue-50 px-2 py-1 rounded-md">Macros</button>
         </div>
       </div>
       
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs text-gray-500">This Week</p>
-            <p className="text-sm font-medium">Daily Average: {dailyAverage.toLocaleString()} cal</p>
-            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+            <p className="text-sm text-gray-500">This Week</p>
+            <p className="text-base font-medium">Daily Average: {dailyAverage.toLocaleString()} cal</p>
+            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 rounded-full bg-blue-500 mr-1"></div>
-            <span className="text-xs text-gray-500 mr-3">Calories</span>
+            <span className="text-sm text-gray-500 mr-3">Calories</span>
             <div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
-            <span className="text-xs text-gray-500 mr-3">Target</span>
+            <span className="text-sm text-gray-500 mr-3">Target</span>
           </div>
         </div>
         
@@ -233,7 +233,7 @@ const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({
         <div className="h-60 relative">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
-              <div className="animate-pulse text-blue-500">Loading data...</div>
+              <div className="animate-pulse text-blue-500 text-base">Loading data...</div>
             </div>
           )}
           <Chart

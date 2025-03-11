@@ -69,7 +69,7 @@ export default function NutrientGoalsWidget() {
     return (
       <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
         <div className="border-b border-gray-100 px-5 py-4">
-          <h2 className="text-base font-medium text-gray-900">Nutrient Goals</h2>
+          <h2 className="text-xl font-medium text-gray-900">Nutrient Goals</h2>
         </div>
         <div className="p-5 flex justify-center items-center">
           <div className="animate-pulse flex space-x-4">
@@ -93,10 +93,10 @@ export default function NutrientGoalsWidget() {
     return (
       <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
         <div className="border-b border-gray-100 px-5 py-4">
-          <h2 className="text-base font-medium text-gray-900">Nutrient Goals</h2>
+          <h2 className="text-xl font-medium text-gray-900">Nutrient Goals</h2>
         </div>
         <div className="p-5">
-          <p className="text-red-500">Error loading nutrient data: {error}</p>
+          <p className="text-red-500 text-base">Error loading nutrient data: {error}</p>
         </div>
       </div>
     );
@@ -105,15 +105,15 @@ export default function NutrientGoalsWidget() {
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
       <div className="border-b border-gray-100 px-5 py-4">
-        <h2 className="text-base font-medium text-gray-900">Nutrient Goals</h2>
+        <h2 className="text-xl font-medium text-gray-900">Nutrient Goals</h2>
       </div>
       
       <div className="p-5 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Total Calories */}
         <div>
           <div className="flex justify-between items-center mb-1">
-            <p className="text-xs font-medium text-gray-700">Calories</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-medium text-gray-700">Calories</p>
+            <p className="text-sm text-gray-500">
               {nutrientData.totalCalories.toLocaleString()} / {goals.calories.toLocaleString()} kcal
             </p>
           </div>
@@ -128,8 +128,8 @@ export default function NutrientGoalsWidget() {
         {/* Protein */}
         <div>
           <div className="flex justify-between items-center mb-1">
-            <p className="text-xs font-medium text-gray-700">Protein</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-medium text-gray-700">Protein</p>
+            <p className="text-sm text-gray-500">
               {Math.round(nutrientData.totalProtein)}g / {goals.protein}g
             </p>
           </div>
@@ -144,8 +144,8 @@ export default function NutrientGoalsWidget() {
         {/* Carbs */}
         <div>
           <div className="flex justify-between items-center mb-1">
-            <p className="text-xs font-medium text-gray-700">Carbs</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-medium text-gray-700">Carbs</p>
+            <p className="text-sm text-gray-500">
               {Math.round(nutrientData.totalCarbs)}g / {goals.carbs}g
             </p>
           </div>
@@ -160,8 +160,8 @@ export default function NutrientGoalsWidget() {
         {/* Fat */}
         <div>
           <div className="flex justify-between items-center mb-1">
-            <p className="text-xs font-medium text-gray-700">Fat</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-medium text-gray-700">Fat</p>
+            <p className="text-sm text-gray-500">
               {Math.round(nutrientData.totalFat)}g / {goals.fat}g
             </p>
           </div>

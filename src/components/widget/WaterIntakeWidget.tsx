@@ -86,10 +86,10 @@ export default function WaterIntakeWidget() {
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="border-b border-gray-100 px-5 py-4 flex justify-between items-center">
-        <h2 className="text-base font-medium text-gray-900">Water Intake</h2>
+        <h2 className="text-xl font-medium text-gray-900">Water Intake</h2>
         <button 
           onClick={handleAddWater}
-          className="text-sm font-medium text-blue-500 hover:text-blue-700 flex items-center"
+          className="text-base font-medium text-blue-500 hover:text-blue-700 flex items-center"
         >
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -104,7 +104,7 @@ export default function WaterIntakeWidget() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
         ) : error ? (
-          <div className="text-red-500 text-center">
+          <div className="text-red-500 text-center text-base">
             Error loading water data. Please try again.
           </div>
         ) : (
@@ -139,22 +139,28 @@ export default function WaterIntakeWidget() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                     </svg>
                   </div>
-                  <p className="text-lg font-bold text-gray-900 mt-1">{percentComplete}%</p>
-                  <p className="text-xs text-gray-500">{totalLiters}/{dailyGoalLiters}L</p>
+                  <p className="text-xl font-bold text-gray-900 mt-1">{percentComplete}%</p>
+                  <p className="text-sm text-gray-500">{totalLiters}/{dailyGoalLiters}L</p>
                 </div>
               </div>
             </div>
             
             <div className="space-y-2 mb-4">
               <div className="flex justify-between items-center">
-                <p className="text-xs text-gray-500">Daily Goal</p>
-                <p className="text-xs font-medium">{dailyGoalLiters.toFixed(1)} L</p>
+                <p className="text-sm text-gray-500">Daily Goal</p>
+                <p className="text-sm font-medium">{dailyGoalLiters} L</p>
               </div>
               <div className="flex justify-between items-center">
-                <p className="text-xs text-gray-500">Remaining</p>
-                <p className="text-xs font-medium text-blue-500">{remainingLiters} L</p>
+                <p className="text-sm text-gray-500">Consumed</p>
+                <p className="text-sm font-medium">{totalLiters} L</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-gray-500">Remaining</p>
+                <p className="text-sm font-medium">{remainingLiters} L</p>
               </div>
             </div>
+            
+            <p className="text-base font-medium text-center mb-3">Quick Add</p>
             
             <div className="grid grid-cols-4 gap-2">
               <button 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
@@ -7,6 +7,7 @@ type FoodEntryModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (foodData: FoodData) => void;
+  initialFoodData?: FoodData & { id?: string };
 };
 
 export type FoodData = {
@@ -17,6 +18,7 @@ export type FoodData = {
   carbs: number;
   fat: number;
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  id?: string;
 };
 
 const initialFoodData: FoodData = {
@@ -29,12 +31,39 @@ const initialFoodData: FoodData = {
   mealType: 'breakfast',
 };
 
-export default function FoodEntryModal({ isOpen, onClose, onSubmit }: FoodEntryModalProps) {
-  const [foodData, setFoodData] = useState<FoodData>(initialFoodData);
+export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodData }: FoodEntryModalProps) {
+  const defaultFoodData = useMemo<FoodData>(() => ({
+    name: '',
+    portion: '',
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    mealType: 'breakfast'
+  }), []);
+
+  const [foodData, setFoodData] = useState<FoodData>(initialFoodData || defaultFoodData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [activeTab, setActiveTab] = useState('manual');
   const [showAiForm, setShowAiForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Reset form when modal opens/closes or when initialFoodData changes
+  useEffect(() => {
+    if (isOpen) {
+      if (initialFoodData) {
+        setFoodData(initialFoodData);
+        setIsEditing(true);
+      } else {
+        setFoodData(defaultFoodData);
+        setIsEditing(false);
+      }
+      setAiPrompt('');
+      setActiveTab('manual');
+      setShowAiForm(false);
+    }
+  }, [isOpen, initialFoodData, defaultFoodData]);
 
   // Daily calorie goal - could be made configurable in the future
   const DAILY_CALORIE_GOAL = 2000;
@@ -111,9 +140,12 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit }: FoodEntryM
     setIsSubmitting(true);
     
     try {
-      // Call the API endpoint
-      const response = await fetch('/api/food', {
-        method: 'POST',
+      // Make API call to create or update food entry
+      const url = '/api/food';
+      const method = isEditing ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -122,22 +154,26 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit }: FoodEntryM
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add food entry');
+        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} food entry`);
       }
       
-      const result = await response.json();
+      // Show success toast
+      toast.success(`Food entry ${isEditing ? 'updated' : 'added'} successfully`);
       
-      // Call the onSubmit prop with the result
+      // Call onSubmit callback
       onSubmit(foodData);
-      toast.success('Food entry added successfully!');
+      
+      // Close modal
+      onClose();
       
       // Reset form
-      setFoodData(initialFoodData);
-      setAiPrompt('');
-      onClose();
+      setFoodData(defaultFoodData);
+      
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('food-added'));
     } catch (error) {
-      console.error('Error adding food entry:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to add food entry');
+      console.error('Error submitting food entry:', error);
+      toast.error(error instanceof Error ? error.message : `Failed to ${isEditing ? 'update' : 'create'} food entry`);
     } finally {
       setIsSubmitting(false);
     }
@@ -147,7 +183,7 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit }: FoodEntryM
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 overflow-hidden">
         <div className="border-b border-gray-100 px-5 py-4 flex justify-between items-center bg-green-50">
-          <h2 className="text-lg font-medium text-gray-900">Add Food</h2>
+          <h2 className="text-lg font-medium text-gray-900">{isEditing ? 'Edit Food' : 'Add Food'}</h2>
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500"
@@ -332,7 +368,7 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit }: FoodEntryM
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Adding...' : 'Add Food'}
+                  {isSubmitting ? (isEditing ? 'Updating...' : 'Adding...') : isEditing ? 'Update Food' : 'Add Food'}
                 </Button>
               </div>
             </form>
