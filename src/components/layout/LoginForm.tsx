@@ -39,7 +39,7 @@ export default function LoginForm() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,19 +49,23 @@ export default function LoginForm() {
           password: formData.password,
         }),
       })
-
-      const data = await response.json()
+      
+      const user = await response.json();
+      
+      const request = await fetch('http://localhost:3000', {
+        headers: {
+          Authorization: `JWT ${user.token}`,
+        },
+      });
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
+        throw new Error('Login failed')
       }
 
-      // Check if there's a redirect parameter
-      const redirected = searchParams.get('redirected')
-      
       // Redirect to app page on success
       router.push('/dashboard')
       router.refresh() // Refresh to update auth state
+
     } catch (err: any) {
       setError(err.message || 'Invalid email or password')
     } finally {

@@ -19,10 +19,12 @@ async function getUserInfo() {
     const token = cookieStore.get('payload-token')?.value || ''
     
     const response = await fetch(`${baseUrl}/api/users/me`, {
+      method:'GET',
       credentials: 'include',
       cache: 'no-store',
       headers: {
         Cookie: `payload-token=${token}`,
+        'Content-Type': 'application/json',
       },
     })
     
