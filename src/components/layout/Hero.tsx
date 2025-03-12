@@ -37,7 +37,7 @@ const Hero = () => {
               asChild
               className="bg-white text-black hover:bg-gray-200 px-10 py-4 rounded-md text-xl w-fit"
             >
-              <Link href="/signup">Start tracking free</Link>
+              <Link href="/register">Start tracking free</Link>
             </Button>
             <Button
               asChild

@@ -82,7 +82,7 @@ export default function Pricing() {
                   <span className="text-base font-medium text-gray-500">{tier.frequency}</span>
                 </p>
                 <p className="mt-1 text-sm text-gray-500">{tier.description}</p>
-                <Link href="/signup" className={`mt-8 block w-full bg-${tier.mostPopular ? 'emerald-600 hover:bg-emerald-700' : 'gray-800 hover:bg-gray-900'} rounded-md py-2 text-sm font-semibold text-white text-center`}>
+                <Link href="/register" className={`mt-8 block w-full bg-${tier.mostPopular ? 'emerald-600 hover:bg-emerald-700' : 'gray-800 hover:bg-gray-900'} rounded-md py-2 text-sm font-semibold text-white text-center`}>
                   {tier.cta}
                 </Link>
               </div>

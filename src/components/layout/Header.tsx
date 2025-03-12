@@ -14,19 +14,20 @@ const Header = () => {
           {/* Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <nav className="flex items-center space-x-8">
-              <Link href="/features" className="text-white hover:text-gray-200 transition-colors">
+              {/* Temporarily point to homepage to avoid 404s */}
+              <Link href="/" className="text-white hover:text-gray-200 transition-colors">
                 Features
               </Link>
               <Link
-                href="/pricing"
+                href="/"
                 className="text-white hover:text-gray-200 transition-colors"
               >
                 Pricing
               </Link>
-              <Link href="/about" className="text-white hover:text-gray-200 transition-colors">
+              <Link href="/" className="text-white hover:text-gray-200 transition-colors">
                 About Us
               </Link>
-              <Link href="/contact" className="text-white hover:text-gray-200 transition-colors">
+              <Link href="/" className="text-white hover:text-gray-200 transition-colors">
                 Contact
               </Link>
             </nav>

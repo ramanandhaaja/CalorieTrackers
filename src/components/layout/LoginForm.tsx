@@ -50,18 +50,17 @@ export default function LoginForm() {
         }),
       })
       
-      const user = await response.json();
-      
-      const request = await fetch('http://localhost:3000', {
-        headers: {
-          Authorization: `JWT ${user.token}`,
-        },
-      });
-
       if (!response.ok) {
         throw new Error('Login failed')
       }
 
+      // Parse the response to get the token
+      const data = await response.json()
+      
+      // Store the token in a cookie
+      // The cookie will be automatically sent with subsequent requests
+      document.cookie = `payload-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax` // 7 days expiry
+      
       // Redirect to app page on success
       router.push('/dashboard')
       router.refresh() // Refresh to update auth state

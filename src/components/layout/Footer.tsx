@@ -124,7 +124,7 @@ const Footer = () => {
                 your calorie intake and achieve your health goals.
               </p>
               <Link
-                href="/signup"
+                href="/register"
                 className="inline-block bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors"
               >
                 Start tracking free
