@@ -12,22 +12,22 @@ const Footer = () => {
               <h3 className="text-lg font-medium text-gray-800 mb-4">Product</h3>
               <ul className="space-y-3">
                 <li>
-                  <Link href="/features" className="text-gray-600 hover:text-gray-900">
+                  <Link href="/" className="text-gray-600 hover:text-gray-900">
                     Features
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pricing" className="text-gray-600 hover:text-gray-900">
+                  <Link href="/" className="text-gray-600 hover:text-gray-900">
                     Pricing
                   </Link>
                 </li>
                 <li>
-                  <Link href="/integrations" className="text-gray-600 hover:text-gray-900">
+                  <Link href="/" className="text-gray-600 hover:text-gray-900">
                     Integrations
                   </Link>
                 </li>
                 <li>
-                  <Link href="/api" className="text-gray-600 hover:text-gray-900">
+                  <Link href="/" className="text-gray-600 hover:text-gray-900">
                     API
                   </Link>
                 </li>
@@ -41,22 +41,22 @@ const Footer = () => {
               <h3 className="text-lg font-medium text-gray-800 mb-4">Resources</h3>
               <ul className="space-y-3">
                 <li>
-                  <Link href="/blog" className="text-gray-600 hover:text-gray-900">
+                  <Link href="/" className="text-gray-600 hover:text-gray-900">
                     Blog
                   </Link>
                 </li>
                 <li>
-                  <Link href="/help" className="text-gray-600 hover:text-gray-900">
+                  <Link href="/" className="text-gray-600 hover:text-gray-900">
                     Help Center
                   </Link>
                 </li>
                 <li>
-                  <Link href="/guides" className="text-gray-600 hover:text-gray-900">
+                  <Link href="/" className="text-gray-600 hover:text-gray-900">
                     Guides
                   </Link>
                 </li>
                 <li>
-                  <Link href="/privacy" className="text-gray-600 hover:text-gray-900">
+                  <Link href="/" className="text-gray-600 hover:text-gray-900">
                     Privacy Policy
                   </Link>
                 </li>
