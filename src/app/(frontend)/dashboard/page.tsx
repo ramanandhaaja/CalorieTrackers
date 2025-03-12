@@ -11,6 +11,9 @@ import FoodEntriesWidget from '@/components/widget/FoodEntriesWidget';
 import WeeklyProgressChartWidget from '@/components/widget/WeeklyProgressChartWidget';
 import NutrientGoalsWidget from '@/components/widget/NutrientGoalsWidget';
 
+// Force dynamic rendering for this page since it uses cookies
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   // Get the current user and redirect if not authenticated
   const user = await requireAuth()
