@@ -8,6 +8,8 @@ import {
   LinearScale,
   BarElement,
   LineElement,
+  BarController,
+  LineController,
   PointElement,
   Title,
   Tooltip,
@@ -24,7 +26,9 @@ ChartJS.register(
   PointElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  BarController,
+  LineController
 );
 
 interface WeeklyProgressChartProps {

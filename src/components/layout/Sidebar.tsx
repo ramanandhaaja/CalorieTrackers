@@ -88,7 +88,7 @@ export default function Sidebar({ username }: SidebarProps) {
               </li>
               <li>
                 <Link 
-                  href="/progress" 
+                  href="/" 
                   className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                     pathname === '/progress' 
                       ? 'bg-blue-50 text-blue-700' 
@@ -103,7 +103,7 @@ export default function Sidebar({ username }: SidebarProps) {
               </li>
               <li>
                 <Link 
-                  href="/settings" 
+                  href="/" 
                   className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                     pathname === '/settings' 
                       ? 'bg-blue-50 text-blue-700' 
