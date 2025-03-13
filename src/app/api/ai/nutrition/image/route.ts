@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     
     // Get the generative model (using gemini-2.0-pro-vision for image analysis)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-pro-vision' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     // Convert the file to a byte array
     const bytes = await imageFile.arrayBuffer();
@@ -68,8 +68,9 @@ export async function POST(request: NextRequest) {
     // Create the prompt for food image analysis
     const prompt = `
       Analyze this food image and provide:
-      1. A detailed description of the food in the image
+      1. Food name (a concise name for the meal)
       2. Nutritional information in JSON format
+      3. Portion size (e.g., "1 serving", "1 plate", "250g", etc.)
       
       For the nutritional information, please provide the following details:
       - Food name (a concise name for the meal)
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
       Format your response as follows:
       
       DESCRIPTION:
-      [Detailed description of the food]
+      Food name (a concise name for the meal), Portion size (e.g., "1 serving", "1 plate", "250g", etc.)
       
       NUTRITION_DATA:
       {

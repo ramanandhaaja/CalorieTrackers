@@ -92,6 +92,12 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
     setShowAiForm(true);
   };
 
+  const handleTakePhotoClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -131,25 +137,22 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
       // Get the AI-generated description and nutritional data
       const data = await response.json();
       
-      // Update the AI prompt with the description
-      setAiPrompt(data.description);
+      // Switch to manual tab to show the filled form
+      setActiveTab('manual');
+      setShowAiForm(false);
       
       // If nutritional data is available, update the form
       if (data.nutritionData) {
         setFoodData(data.nutritionData);
         toast.success('Food analyzed! Please review and edit if needed.');
+      } else {
+        toast.error('Could not extract nutritional data from the image');
       }
     } catch (error) {
       console.error('Error analyzing food photo:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to analyze your food photo');
     } finally {
       setIsAnalyzingPhoto(false);
-    }
-  };
-
-  const handleTakePhotoClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
     }
   };
 
@@ -534,6 +537,13 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
             )}
           </TabsContent>
         </Tabs>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handlePhotoUpload}
+          accept="image/*"
+          className="hidden"
+        />
       </div>
     </div>
   );
