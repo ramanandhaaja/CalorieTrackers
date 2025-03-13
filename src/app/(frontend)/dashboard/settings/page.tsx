@@ -3,6 +3,8 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Save, AlertCircle } from 'lucide-react';
+import { useSidebar } from '@/components/layout/SidebarContext';
+import SidebarToggleButton from '@/components/layout/SidebarToggleButton';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -63,6 +65,7 @@ const dietaryPreferencesOptions = [
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { toggle } = useSidebar();
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -347,7 +350,10 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto py-6">
-      <h1 className="mb-6 text-3xl font-bold">Profile Settings</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Profile Settings</h1>
+        <SidebarToggleButton />
+      </div>
       
       {error && (
         <Alert className="mb-6">

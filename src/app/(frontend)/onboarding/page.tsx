@@ -204,8 +204,8 @@ export default function OnboardingPage() {
       
       // Use a short delay before redirecting to allow the toast to be seen
       setTimeout(() => {
-        // Force a hard navigation to dashboard
-        window.location.href = '/dashboard';
+        // Use the Next.js router for client-side navigation instead of window.location
+        router.push('/dashboard');
       }, 1500);
       
     } catch (error) {

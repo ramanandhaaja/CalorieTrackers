@@ -33,23 +33,6 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Handle toggle button click
-  useEffect(() => {
-    const toggleButton = document.getElementById('sidebar-toggle');
-    
-    const handleToggleClick = () => {
-      setIsOpen(prev => !prev);
-    };
-    
-    if (toggleButton) {
-      toggleButton.addEventListener('click', handleToggleClick);
-      
-      return () => {
-        toggleButton.removeEventListener('click', handleToggleClick);
-      };
-    }
-  }, []);
-  
   const toggle = () => setIsOpen(prev => !prev);
   const close = () => setIsOpen(false);
   

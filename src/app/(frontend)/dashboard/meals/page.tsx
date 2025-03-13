@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { DatePicker } from '@/components/ui/date-picker';
+import { useSidebar } from '@/components/layout/SidebarContext';
+import SidebarToggleButton from '@/components/layout/SidebarToggleButton';
 
 interface FoodEntry {
   id: string;
@@ -60,7 +62,8 @@ export default function MealsPage() {
   const [pagination, setPagination] = useState<PaginationData | null>(null);
   const [totals, setTotals] = useState({ calories: 0, protein: 0, carbs: 0, fat: 0 });
   const [loading, setLoading] = useState(true);
-  
+  const { toggle } = useSidebar();
+
   // Filters
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
@@ -191,8 +194,10 @@ export default function MealsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-3xl font-bold">Meal History</h1>
         
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <SidebarToggleButton />
+          
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="px-3 py-1">
               <span className="font-semibold">{totals.calories}</span> calories
             </Badge>
