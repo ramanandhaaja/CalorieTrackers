@@ -262,7 +262,7 @@ export default function OnboardingPage() {
                 </label>
                 <select
                   id="gender"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 appearance-none bg-white"
                   value={formData.gender}
                   onChange={(e) => updateFormData("gender", e.target.value)}
                   required
@@ -303,12 +303,13 @@ export default function OnboardingPage() {
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <select
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      id="height-unit"
+                      className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 appearance-none bg-white"
                       value={formData.height.unit}
                       onChange={(e) => updateNestedFormData("height", "unit", e.target.value)}
                     >
                       <option value="cm">Centimeters (cm)</option>
-                      <option value="ft">Feet/Inches</option>
+                      <option value="ft">Feet/Inches (ft/in)</option>
                     </select>
                   </div>
                 </div>
@@ -344,12 +345,13 @@ export default function OnboardingPage() {
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <select
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      id="weight-unit"
+                      className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 appearance-none bg-white"
                       value={formData.weight.unit}
                       onChange={(e) => updateNestedFormData("weight", "unit", e.target.value)}
                     >
                       <option value="kg">Kilograms (kg)</option>
-                      <option value="lbs">Pounds (lbs)</option>
+                      <option value="lb">Pounds (lb)</option>
                     </select>
                   </div>
                 </div>
@@ -370,11 +372,12 @@ export default function OnboardingPage() {
             <h2 className="text-xl font-semibold">Activity & Goals</h2>
             <div className="grid grid-cols-1 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="activityLevel" className="block text-sm font-medium text-gray-700 mb-1">
                   Activity Level
                 </label>
                 <select
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  id="activityLevel"
+                  className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 appearance-none bg-white"
                   value={formData.activityLevel}
                   onChange={(e) => updateFormData("activityLevel", e.target.value)}
                   required
@@ -383,28 +386,25 @@ export default function OnboardingPage() {
                     Select activity level
                   </option>
                   <option value="sedentary">Sedentary (little or no exercise)</option>
-                  <option value="light">
-                    Lightly active (light exercise/sports 1-3 days/week)
-                  </option>
-                  <option value="moderate">
-                    Moderately active (moderate exercise/sports 3-5 days/week)
-                  </option>
+                  <option value="light">Lightly active (light exercise/sports 1-3 days/week)</option>
+                  <option value="moderate">Moderately active (moderate exercise/sports 3-5 days/week)</option>
                   <option value="very">Very active (hard exercise/sports 6-7 days a week)</option>
-                  <option value="extra">
-                    Extra active (very hard exercise & physical job or 2x training)
-                  </option>
+                  <option value="extra">Extra active (very hard exercise & physical job or 2x training)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fitness Goal</label>
+                <label htmlFor="goal" className="block text-sm font-medium text-gray-700 mb-1">
+                  Goal
+                </label>
                 <select
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  id="goal"
+                  className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 appearance-none bg-white"
                   value={formData.goal}
                   onChange={(e) => updateFormData("goal", e.target.value)}
                   required
                 >
                   <option value="" disabled>
-                    Select fitness goal
+                    Select goal
                   </option>
                   <option value="lose">Lose weight</option>
                   <option value="maintain">Maintain weight</option>

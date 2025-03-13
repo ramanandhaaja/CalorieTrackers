@@ -1,12 +1,20 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface NutrientData {
   totalCalories: number;
   totalProtein: number;
   totalCarbs: number;
   totalFat: number;
+}
+
+interface UserGoals {
+  dailyCalorieTarget: number;
+  dailyProtein: number;
+  dailyCarbs: number;
+  dailyFat: number;
 }
 
 interface NutrientGoalsWidgetProps {
@@ -26,15 +34,39 @@ export default function NutrientGoalsWidget({ refreshTrigger = 0, userGoals }: N
     totalCarbs: 0,
     totalFat: 0
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Define goals - use user goals if provided, otherwise use defaults
-  const goals = {
+  const [goals, setGoals] = useState({
     calories: userGoals?.calories || 2200,
     protein: userGoals?.protein || 120,
     carbs: userGoals?.carbs || 200,
     fat: userGoals?.fat || 65
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch user goals from the API
+  const fetchUserGoals = async () => {
+    try {
+      const response = await fetch('/api/user-details');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch user goals');
+      }
+      
+      const data = await response.json();
+      
+      if (data.docs && data.docs.length > 0) {
+        const userDetails = data.docs[0];
+        setGoals({
+          calories: userDetails.dailyCalorieTarget || 2200,
+          protein: userDetails.dailyProtein || 120,
+          carbs: userDetails.dailyCarbs || 200,
+          fat: userDetails.dailyFat || 65
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching user goals:', err);
+      // Fall back to default goals or provided userGoals
+    }
   };
 
   // Fetch nutrient data
@@ -64,7 +96,12 @@ export default function NutrientGoalsWidget({ refreshTrigger = 0, userGoals }: N
 
   // Fetch data on component mount and when refreshTrigger changes
   useEffect(() => {
-    fetchNutrientData();
+    const fetchData = async () => {
+      await fetchUserGoals();
+      await fetchNutrientData();
+    };
+    
+    fetchData();
   }, [refreshTrigger]);
 
   // Calculate percentages
@@ -115,7 +152,13 @@ export default function NutrientGoalsWidget({ refreshTrigger = 0, userGoals }: N
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
       <div className="border-b border-gray-100 px-5 py-4">
-        <h2 className="text-xl font-medium text-gray-900">Nutrient Goals</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-medium text-gray-900">Nutrient Goals</h2>
+          <Link href="/dashboard/settings" className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Change Goals
+          </Link>
+        </div>
+        
       </div>
       
       <div className="p-5 grid grid-cols-1 md:grid-cols-4 gap-8">

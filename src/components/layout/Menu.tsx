@@ -89,7 +89,7 @@ const Menu = () => {
 
           {/* View All Features Button */}
           <Button asChild className="hidden md:block bg-green-600 text-white hover:bg-green-700 ml-4">
-            <Link href="/features">View all features</Link>
+            <Link href="/">View all features</Link>
           </Button>
         </div>
 
@@ -109,7 +109,7 @@ const Menu = () => {
         {/* Mobile View All Features Button */}
         <div className="mt-12 flex justify-center md:hidden">
           <Button asChild className="bg-green-600 text-white hover:bg-green-700">
-            <Link href="/features">View all features</Link>
+            <Link href="/">View all features</Link>
           </Button>
         </div>
       </div>

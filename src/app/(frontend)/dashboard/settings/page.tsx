@@ -395,6 +395,7 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
                     <Select
+                    
                       value={formValues.gender}
                       onValueChange={(value) => handleInputChange('gender', value)}
                     >

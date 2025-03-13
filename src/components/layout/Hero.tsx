@@ -44,7 +44,7 @@ const Hero = () => {
               variant="link"
               className="text-white hover:text-gray-200 px-10 py-4 rounded-md text-xl underline w-fit"
             >
-              <Link href="/features">Explore features</Link>
+              <Link href="/">Explore features</Link>
             </Button>
           </div>
         </div>
