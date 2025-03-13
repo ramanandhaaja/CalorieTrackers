@@ -13,7 +13,7 @@ const AboutUs = () => {
         <div className="absolute left-0 top-0 hidden md:block">
           <div className="relative h-24 w-24 rounded-lg overflow-hidden">
             <Image
-              src="/images/hero-background.jpg"
+              src="/images/food1.png"
               alt="User taking photo of food"
               fill
               className="object-cover"
@@ -25,7 +25,7 @@ const AboutUs = () => {
         <div className="absolute left-16 bottom-0 hidden md:block">
           <div className="relative h-28 w-28 rounded-lg overflow-hidden">
             <Image
-              src="/images/hero-background.jpg"
+              src="/images/food2.png"
               alt="Smartphone with calorie tracking app"
               fill
               className="object-cover"
@@ -37,7 +37,7 @@ const AboutUs = () => {
         <div className="absolute right-0 top-0 hidden md:block">
           <div className="relative h-28 w-28 rounded-lg overflow-hidden">
             <Image
-              src="/images/hero-background.jpg"
+              src="/images/food3.png"
               alt="Dashboard with nutrition data"
               fill
               className="object-cover"
@@ -49,7 +49,7 @@ const AboutUs = () => {
         <div className="absolute right-16 bottom-0 hidden md:block">
           <div className="relative h-24 w-24 rounded-lg overflow-hidden">
             <Image
-              src="/images/hero-background.jpg"
+              src="/images/food4.png"
               alt="Person achieving fitness goals"
               fill
               className="object-cover"

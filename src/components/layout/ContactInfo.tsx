@@ -62,7 +62,7 @@ const ContactInfo = () => {
           <div className="rounded-lg overflow-hidden shadow-lg">
             <div className="relative h-[500px] w-full">
               <Image 
-                src="/images/hero-background.jpg" 
+                src="/images/team.jpg" 
                 alt="Support team helping customers with the calorie tracking app" 
                 fill
                 className="object-cover"

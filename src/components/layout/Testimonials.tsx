@@ -7,7 +7,7 @@ const testimonials = [
     quote:
       'The AI photo recognition is incredibly accurate! I just snap a picture of my meal and it identifies everything with precise calorie counts.',
     author: 'John L.',
-    image: '/images/hero-background.jpg',
+    image: '/images/testimonial.jpg',
     alt: 'Satisfied user John',
   },
   {
