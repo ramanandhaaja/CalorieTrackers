@@ -88,8 +88,7 @@ const Header = () => {
               <div className="flex flex-col h-full">
                 {/* Close button */}
                 <div className="flex justify-end p-4">
-                  <SheetClose className="rounded-full p-2 hover:bg-gray-100" aria-label="Close menu">
-                    <X className="h-5 w-5 text-gray-500" />
+                  <SheetClose className="rounded-full p-2 decoration-none" aria-label="Close menu">
                   </SheetClose>
                 </div>
                 
