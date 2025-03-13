@@ -71,6 +71,7 @@ export interface Config {
     users: User;
     'water-entries': WaterEntry;
     'food-entries': FoodEntry;
+    'user-details': UserDetail;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -82,6 +83,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     'water-entries': WaterEntriesSelect<false> | WaterEntriesSelect<true>;
     'food-entries': FoodEntriesSelect<false> | FoodEntriesSelect<true>;
+    'user-details': UserDetailsSelect<false> | UserDetailsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -283,6 +285,68 @@ export interface FoodEntry {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-details".
+ */
+export interface UserDetail {
+  id: number;
+  /**
+   * User age in years
+   */
+  age: number;
+  /**
+   * User gender
+   */
+  gender: 'male' | 'female' | 'not-specified';
+  /**
+   * User height (required)
+   */
+  height: {
+    value: number;
+    unit: 'cm' | 'ft';
+    /**
+     * Additional inches (if using feet/inches)
+     */
+    inches?: number | null;
+  };
+  /**
+   * User weight (required)
+   */
+  weight: {
+    value: number;
+    unit: 'kg' | 'lbs';
+  };
+  /**
+   * User activity level
+   */
+  activityLevel: 'sedentary' | 'light' | 'moderate' | 'very' | 'extra';
+  /**
+   * User fitness goal
+   */
+  goal: 'lose' | 'maintain' | 'gain' | 'build';
+  /**
+   * User dietary preferences
+   */
+  dietaryPreferences?:
+    | ('vegetarian' | 'vegan' | 'pescatarian' | 'gluten-free' | 'dairy-free' | 'keto' | 'paleo' | 'low-carb')[]
+    | null;
+  /**
+   * Basal Metabolic Rate (calculated)
+   */
+  bmr?: number | null;
+  /**
+   * Total Daily Energy Expenditure (calculated)
+   */
+  tdee?: number | null;
+  /**
+   * Daily calorie target based on goals (calculated)
+   */
+  dailyCalorieTarget?: number | null;
+  user: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -307,6 +371,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'food-entries';
         value: number | FoodEntry;
+      } | null)
+    | ({
+        relationTo: 'user-details';
+        value: number | UserDetail;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -445,6 +513,36 @@ export interface FoodEntriesSelect<T extends boolean = true> {
         carbsPercentage?: T;
         fatPercentage?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-details_select".
+ */
+export interface UserDetailsSelect<T extends boolean = true> {
+  age?: T;
+  gender?: T;
+  height?:
+    | T
+    | {
+        value?: T;
+        unit?: T;
+        inches?: T;
+      };
+  weight?:
+    | T
+    | {
+        value?: T;
+        unit?: T;
+      };
+  activityLevel?: T;
+  goal?: T;
+  dietaryPreferences?: T;
+  bmr?: T;
+  tdee?: T;
+  dailyCalorieTarget?: T;
+  user?: T;
   updatedAt?: T;
   createdAt?: T;
 }

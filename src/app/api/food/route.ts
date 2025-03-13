@@ -2,6 +2,7 @@ import { getPayload } from 'payload';
 import { NextRequest, NextResponse } from 'next/server';
 import type { FoodEntry } from '../../../payload-types';
 import config from '@/payload.config';
+import { getCurrentUser } from '@/lib/auth';
 
 // Helper function to get the start and end of today
 function getTodayDateRange() {
@@ -59,9 +60,16 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // For now, we'll use a mock user ID for testing
-    // In production, you would implement proper authentication
-    const mockUserId = 1; // Replace with a valid user ID from your database
+    // Get the current authenticated user
+    const user = await getCurrentUser();
+    
+    // If no user is authenticated, return an error
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     // Create the food entry
     const foodEntry = await payload.create({
@@ -75,7 +83,7 @@ export async function POST(req: NextRequest) {
         fat: Number(body.fat),
         mealType: body.mealType,
         date: body.date || new Date().toISOString(),
-        user: mockUserId, // Use a valid user ID from your database
+        user: user.id, // Use the authenticated user's ID
         // The totalMacros will be calculated by the collection hooks
       },
     });
@@ -106,9 +114,16 @@ export async function PUT(req: NextRequest) {
       );
     }
     
-    // For now, we'll use a mock user ID for testing
-    // In production, you would implement proper authentication
-    const mockUserId = 1;
+    // Get the current authenticated user
+    const user = await getCurrentUser();
+    
+    // If no user is authenticated, return an error
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     // Update the food entry
     const updatedFoodEntry = await payload.update({
@@ -150,6 +165,17 @@ export async function DELETE(req: NextRequest) {
       );
     }
     
+    // Get the current authenticated user
+    const user = await getCurrentUser();
+    
+    // If no user is authenticated, return an error
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+    
     // Delete the food entry
     const deletedFoodEntry = await payload.delete({
       collection: 'food-entries',
@@ -185,9 +211,16 @@ export async function GET(req: NextRequest) {
     // Get date range for today
     const { startOfDay, endOfDay } = getTodayDateRange();
     
-    // For now, we'll use a mock user ID for testing
-    // In production, you would get this from authentication
-    const mockUserId = 1;
+    // Get the current authenticated user
+    const user = await getCurrentUser();
+    
+    // If no user is authenticated, return an error
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     // Query food entries for today grouped by meal type
     const foodEntries = await payload.find({
@@ -196,79 +229,76 @@ export async function GET(req: NextRequest) {
         and: [
           {
             user: {
-              equals: mockUserId
+              equals: user.id
             }
           },
           {
             date: {
-              greater_than_equal: startOfDay
-            }
-          },
-          {
-            date: {
+              greater_than_equal: startOfDay,
               less_than_equal: endOfDay
             }
           }
         ]
       },
       sort: 'date',
-      limit: 100, // Reasonable limit for a day's entries
+      depth: 0, // Don't populate references
     });
     
-    // Group entries by meal type
-    const mealGroups: {
-      breakfast: FoodEntry[],
-      lunch: FoodEntry[],
-      dinner: FoodEntry[],
-      snack: FoodEntry[]
-    } = {
+    // Group by meal type
+    const mealGroups: Record<string, FoodEntry[]> = {
       breakfast: [],
       lunch: [],
       dinner: [],
       snack: []
     };
     
-    let totalCalories = 0;
-    let totalProtein = 0;
-    let totalCarbs = 0;
-    let totalFat = 0;
-    
-    // Process and group entries
-    foodEntries.docs.forEach(entry => {
-      const mealType = entry.mealType as keyof typeof mealGroups;
-      if (mealGroups[mealType]) {
-        mealGroups[mealType].push(entry);
-      }
-      
-      // Add to daily totals
-      totalCalories += entry.calories as number;
-      totalProtein += entry.protein as number;
-      totalCarbs += entry.carbs as number;
-      totalFat += entry.fat as number;
-    });
-    
-    // Calculate meal type totals
+    // Calculate meal totals
     const mealTotals = {
-      breakfast: mealGroups.breakfast.reduce((sum, entry) => sum + (entry.calories as number), 0),
-      lunch: mealGroups.lunch.reduce((sum, entry) => sum + (entry.calories as number), 0),
-      dinner: mealGroups.dinner.reduce((sum, entry) => sum + (entry.calories as number), 0),
-      snack: mealGroups.snack.reduce((sum, entry) => sum + (entry.calories as number), 0)
+      breakfast: 0,
+      lunch: 0,
+      dinner: 0,
+      snack: 0
     };
     
+    // Calculate total macros for the day
+    const totalMacros = {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0
+    };
+    
+    // Process each food entry
+    foodEntries.docs.forEach((entry: FoodEntry) => {
+      // Add to the appropriate meal type group
+      if (mealGroups[entry.mealType]) {
+        mealGroups[entry.mealType].push(entry);
+        
+        // Add to meal totals
+        mealTotals[entry.mealType] += entry.calories || 0;
+      }
+      
+      // Add to total macros
+      totalMacros.calories += entry.calories || 0;
+      totalMacros.protein += entry.protein || 0;
+      totalMacros.carbs += entry.carbs || 0;
+      totalMacros.fat += entry.fat || 0;
+    });
+    
     return NextResponse.json({
-      totalCalories,
-      totalProtein,
-      totalCarbs,
-      totalFat,
+      totalCalories: totalMacros.calories,
+      totalProtein: totalMacros.protein,
+      totalCarbs: totalMacros.carbs,
+      totalFat: totalMacros.fat,
       mealGroups,
       mealTotals,
       entries: foodEntries.docs
-    });
+    }, { status: 200 });
   } catch (error) {
     console.error('Error fetching food entries:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch food entries', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      { error: `Error fetching food entries: ${error instanceof Error ? error.message : String(error)}` },
+      { status: 400 }
     );
   }
 }
@@ -278,123 +308,126 @@ async function getWeeklyData(req: NextRequest) {
   try {
     const payload = await getPayload({ config: await config });
     
-    // Get date range for the current week (Monday to Sunday)
+    // Get date range for the current week
     const { startOfWeek, endOfWeek } = getWeekDateRange();
-    console.log(`Using week range: ${startOfWeek} to ${endOfWeek}`);
     
-    // For now, we'll use a mock user ID for testing
-    // In production, you would get this from authentication
-    const mockUserId = 1;
+    // Get the current authenticated user
+    const user = await getCurrentUser();
     
-    // Query food entries for the past week
+    // If no user is authenticated, return an error
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+    
+    // Query food entries for the week
     const foodEntries = await payload.find({
       collection: 'food-entries',
       where: {
         and: [
           {
             user: {
-              equals: mockUserId
+              equals: user.id
             }
           },
           {
             date: {
-              greater_than_equal: startOfWeek
-            }
-          },
-          {
-            date: {
+              greater_than_equal: startOfWeek,
               less_than_equal: endOfWeek
             }
           }
         ]
       },
       sort: 'date',
-      limit: 500, // Reasonable limit for a week's entries
+      depth: 0, // Don't populate references
     });
     
-    // Group entries by day and calculate daily totals
-    const dailyData: Record<string, { date: Date, calories: number, entries: FoodEntry[] }> = {};
+    // Group by day of the week
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dailyData: Record<string, {
+      totalMacros: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+      };
+      entries: FoodEntry[];
+    }> = {};
     
-    // Parse the start date from startOfWeek
-    const startDate = new Date(startOfWeek);
-    console.log('Start date of week:', startDate);
-    
-    // Create data for each day of the current week (Monday to Sunday)
-    for (let i = 0; i < 7; i++) {
-      // Clone the start date and add i days to get each day of the week
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i);
-      
-      // Format date string in local timezone (YYYY-MM-DD)
-      const dateString = date.getFullYear() + '-' + 
-        String(date.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(date.getDate()).padStart(2, '0');
-      
-      dailyData[dateString] = {
-        date: new Date(date),
-        calories: 0,
+    // Initialize daily data structure
+    days.forEach(day => {
+      dailyData[day] = {
+        totalMacros: {
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0
+        },
         entries: []
       };
-    }
-    
-    // Process entries and group by day
-    foodEntries.docs.forEach(entry => {
-      // Parse the date from the entry and handle timezone correctly
-      const entryDate = new Date(entry.date as string);
-      
-      // Format date string in local timezone (YYYY-MM-DD)
-      const dateString = entryDate.getFullYear() + '-' + 
-        String(entryDate.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(entryDate.getDate()).padStart(2, '0');
-      
-      console.log(`Entry date: ${entry.date}, parsed as: ${entryDate}, dateString: ${dateString}`);
-      
-      if (dailyData[dateString]) {
-        dailyData[dateString].entries.push(entry);
-        dailyData[dateString].calories += entry.calories as number;
-      } else {
-        console.log(`No matching date bucket for entry date: ${dateString}`);
-      }
     });
     
-    // Convert to array and keep the order (Monday to Sunday)
-    // We don't need to sort since we created the data in the correct order
-    const weeklyData = Object.values(dailyData);
-    
-    // Calculate weekly average
-    const totalCalories = weeklyData.reduce((sum, day) => sum + day.calories, 0);
-    const dailyAverage = Math.round(totalCalories / weeklyData.length);
-    
-    // Log what we're returning for debugging
-    console.log('Weekly data being returned:', weeklyData);
-    console.log('Daily average:', dailyAverage);
-    
-    // Format the data for the chart
-    const formattedData = weeklyData.map(day => {
-      // Format date in a consistent way for the frontend
-      const formattedDate = day.date.getFullYear() + '-' + 
-        String(day.date.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(day.date.getDate()).padStart(2, '0');
+    // Process each food entry
+    foodEntries.docs.forEach((entry: FoodEntry) => {
+      const entryDate = new Date(entry.date);
+      const dayOfWeek = days[entryDate.getDay()];
       
-      return {
-        date: formattedDate,
-        calories: day.calories,
-        entryCount: day.entries.length
-      };
+      // Add entry to the appropriate day
+      dailyData[dayOfWeek].entries.push(entry);
+      
+      // Add to daily totals
+      dailyData[dayOfWeek].totalMacros.calories += entry.calories || 0;
+      dailyData[dayOfWeek].totalMacros.protein += entry.protein || 0;
+      dailyData[dayOfWeek].totalMacros.carbs += entry.carbs || 0;
+      dailyData[dayOfWeek].totalMacros.fat += entry.fat || 0;
     });
+    
+    // Calculate weekly totals
+    const weeklyTotals = {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0
+    };
+    
+    Object.values(dailyData).forEach((day: any) => {
+      weeklyTotals.calories += day.totalMacros.calories;
+      weeklyTotals.protein += day.totalMacros.protein;
+      weeklyTotals.carbs += day.totalMacros.carbs;
+      weeklyTotals.fat += day.totalMacros.fat;
+    });
+    
+    // Format data for the WeeklyProgressChartWidget
+    // Reorder days to match chart display (starting from Monday)
+    const orderedDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    
+    // Create the weeklyData array in the format expected by the component
+    const weeklyData = orderedDays.map(day => ({
+      date: day,
+      calories: dailyData[day].totalMacros.calories,
+      entryCount: dailyData[day].entries.length
+    }));
+    
+    // Calculate daily average calories
+    const dailyAverage = Math.round(weeklyTotals.calories / 7);
+    
+    // Create the calorieValues array (just the calorie values in order)
+    const calorieValues = orderedDays.map(day => dailyData[day].totalMacros.calories);
     
     return NextResponse.json({
-      weeklyData: formattedData,
+      weeklyTotals,
+      dailyData,
+      weeklyData,
       dailyAverage,
-      totalCalories,
-      // Also include raw calorie values as an array for easier chart consumption
-      calorieValues: weeklyData.map(day => day.calories)
-    });
+      calorieValues
+    }, { status: 200 });
   } catch (error) {
     console.error('Error fetching weekly food data:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch weekly food data', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      { error: `Error fetching weekly food data: ${error instanceof Error ? error.message : String(error)}` },
+      { status: 400 }
     );
   }
 }
@@ -405,118 +438,113 @@ async function getHistoricalData(req: NextRequest) {
     const payload = await getPayload({ config: await config });
     const { searchParams } = new URL(req.url);
     
-    // Get pagination parameters
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '20', 10);
-    
-    // Get date range parameters if provided
+    // Parse date range from query parameters
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     
-    // Get meal type filter if provided
-    const mealType = searchParams.get('mealType');
-    
-    // For now, we'll use a mock user ID for testing
-    // In production, you would get this from authentication
-    const mockUserId = 1;
-    
-    // Build the query conditions
-    const whereConditions: any[] = [
-      {
-        user: {
-          equals: mockUserId
-        }
-      }
-    ];
-    
-    // Add date range conditions if provided
-    if (startDate) {
-      whereConditions.push({
-        date: {
-          greater_than_equal: new Date(startDate).toISOString()
-        }
-      });
+    if (!startDate || !endDate) {
+      return NextResponse.json(
+        { error: 'Missing required parameters: startDate and endDate' },
+        { status: 400 }
+      );
     }
     
-    if (endDate) {
-      whereConditions.push({
-        date: {
-          less_than_equal: new Date(endDate).toISOString()
-        }
-      });
+    // Get the current authenticated user
+    const user = await getCurrentUser();
+    
+    // If no user is authenticated, return an error
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
     }
     
-    // Add meal type condition if provided
-    if (mealType) {
-      whereConditions.push({
-        mealType: {
-          equals: mealType
-        }
-      });
-    }
-    
-    // Query food entries with pagination and filters
+    // Query food entries for the specified date range
     const foodEntries = await payload.find({
       collection: 'food-entries',
       where: {
-        and: whereConditions
+        and: [
+          {
+            user: {
+              equals: user.id
+            }
+          },
+          {
+            date: {
+              greater_than_equal: startDate,
+              less_than_equal: endDate
+            }
+          }
+        ]
       },
-      sort: '-date', // Sort by date descending (newest first)
-      limit,
-      page,
+      sort: 'date',
+      depth: 0, // Don't populate references
     });
     
-    // Calculate totals for the returned entries
-    let totalCalories = 0;
-    let totalProtein = 0;
-    let totalCarbs = 0;
-    let totalFat = 0;
+    // Group by date
+    const groupedByDate: Record<string, {
+      totalMacros: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+      };
+      entries: FoodEntry[];
+    }> = {};
     
-    foodEntries.docs.forEach(entry => {
-      totalCalories += entry.calories as number;
-      totalProtein += entry.protein as number;
-      totalCarbs += entry.carbs as number;
-      totalFat += entry.fat as number;
-    });
-    
-    // Group entries by date
-    const entriesByDate: Record<string, FoodEntry[]> = {};
-    
-    foodEntries.docs.forEach(entry => {
-      const entryDate = new Date(entry.date as string);
-      const dateString = entryDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+    // Process each food entry
+    foodEntries.docs.forEach((entry: FoodEntry) => {
+      // Get the date part only (YYYY-MM-DD)
+      const dateStr = new Date(entry.date).toISOString().split('T')[0];
       
-      if (!entriesByDate[dateString]) {
-        entriesByDate[dateString] = [];
+      // Initialize date group if it doesn't exist
+      if (!groupedByDate[dateStr]) {
+        groupedByDate[dateStr] = {
+          totalMacros: {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0
+          },
+          entries: []
+        };
       }
       
-      entriesByDate[dateString].push(entry);
+      // Add entry to the date group
+      groupedByDate[dateStr].entries.push(entry);
+      
+      // Add to date totals
+      groupedByDate[dateStr].totalMacros.calories += entry.calories || 0;
+      groupedByDate[dateStr].totalMacros.protein += entry.protein || 0;
+      groupedByDate[dateStr].totalMacros.carbs += entry.carbs || 0;
+      groupedByDate[dateStr].totalMacros.fat += entry.fat || 0;
+    });
+    
+    // Calculate overall totals
+    const overallTotals = {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0
+    };
+    
+    Object.values(groupedByDate).forEach((day: any) => {
+      overallTotals.calories += day.totalMacros.calories;
+      overallTotals.protein += day.totalMacros.protein;
+      overallTotals.carbs += day.totalMacros.carbs;
+      overallTotals.fat += day.totalMacros.fat;
     });
     
     return NextResponse.json({
-      entries: foodEntries.docs,
-      entriesByDate,
-      pagination: {
-        totalDocs: foodEntries.totalDocs,
-        totalPages: foodEntries.totalPages,
-        page: foodEntries.page,
-        prevPage: foodEntries.prevPage,
-        nextPage: foodEntries.nextPage,
-        hasPrevPage: foodEntries.hasPrevPage,
-        hasNextPage: foodEntries.hasNextPage,
-      },
-      totals: {
-        calories: totalCalories,
-        protein: totalProtein,
-        carbs: totalCarbs,
-        fat: totalFat,
-      }
-    });
+      overallTotals,
+      dailyData: groupedByDate
+    }, { status: 200 });
   } catch (error) {
     console.error('Error fetching historical food data:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch historical food data', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      { error: `Error fetching historical food data: ${error instanceof Error ? error.message : String(error)}` },
+      { status: 400 }
     );
   }
 }

@@ -2,6 +2,7 @@ import { getPayload } from 'payload';
 import { NextRequest, NextResponse } from 'next/server';
 import type { WaterEntry } from '../../../payload-types';
 import config from '@/payload.config';
+import { getCurrentUser } from '@/lib/auth';
 
 // Helper function to get the start and end of today
 function getTodayDateRange() {
@@ -29,10 +30,16 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // For now, we'll use a mock user ID for testing
-    // In production, you would implement proper authentication
-    // Using a numeric ID as required by the WaterEntry interface
-    const mockUserId = 1; // Replace with a valid user ID from your database
+    // Get the current authenticated user
+    const user = await getCurrentUser();
+    
+    // If no user is authenticated, return an error
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     const amount = Number(body.amount);
     const unit = body.unit || 'ml';
@@ -55,7 +62,7 @@ export async function POST(req: NextRequest) {
         unit: unit,
         time: body.time || new Date().toISOString(),
         totalMilliliters: totalMilliliters, // Include for TypeScript compatibility
-        user: mockUserId, // Use a valid user ID from your database
+        user: user.id, // Use the authenticated user's ID
       },
     });
     
@@ -77,9 +84,16 @@ export async function GET(req: NextRequest) {
     // Get date range for today
     const { startOfDay, endOfDay } = getTodayDateRange();
     
-    // For now, we'll use a mock user ID for testing
-    // In production, you would get this from authentication
-    const mockUserId = 1;
+    // Get the current authenticated user
+    const user = await getCurrentUser();
+    
+    // If no user is authenticated, return an error
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     // Query water entries for today
     const waterEntries = await payload.find({
@@ -88,7 +102,7 @@ export async function GET(req: NextRequest) {
         and: [
           {
             user: {
-              equals: mockUserId
+              equals: user.id
             }
           },
           {

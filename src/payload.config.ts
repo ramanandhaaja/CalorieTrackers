@@ -13,6 +13,7 @@ import { Media } from './collections/Media'
 import { Menu } from './collections/Menu'
 import { Water } from './collections/Water'
 import { Food } from './collections/Food'
+import {UserDetails} from './collections/UserDetails'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -29,7 +30,7 @@ export default buildConfig({
       },
     },
   },
-  collections: [Menu, Media, Users, Water, Food],
+  collections: [Menu, Media, Users, Water, Food, UserDetails],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
