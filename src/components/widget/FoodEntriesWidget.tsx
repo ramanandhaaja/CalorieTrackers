@@ -100,6 +100,9 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
   // Handle delete food entry
   const handleDeleteFood = async (id: string) => {
     try {
+      // Set the deleting state to show loading spinner
+      setDeletingFoodId(id);
+      
       const response = await fetch(`/api/food?id=${id}`, {
         method: 'DELETE',
       });
@@ -122,12 +125,16 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
     } catch (error) {
       console.error('Error deleting food entry:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to delete food entry');
+    } finally {
+      // Clear the deleting state
+      setDeletingFoodId(null);
     }
   };
 
   // Render a single food entry
   const renderFoodEntry = (entry: FoodEntry, mealType: MealType) => {
     const colors = MEAL_TYPE_COLORS[mealType];
+    const isDeleting = deletingFoodId === String(entry.id);
     
     return (
       <div key={entry.id} className="flex justify-between py-2 border-b border-gray-50">
@@ -154,6 +161,7 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
               onClick={() => handleEditFood(entry)}
               className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
               aria-label="Edit food entry"
+              disabled={isDeleting}
             >
               <Pencil size={14} />
             </button>
@@ -161,8 +169,13 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
               onClick={() => handleDeleteFood(String(entry.id))}
               className="p-1 text-gray-400 hover:text-red-500 transition-colors"
               aria-label="Delete food entry"
+              disabled={isDeleting}
             >
-              <Trash2 size={14} />
+              {isDeleting ? (
+                <div className="w-3.5 h-3.5 border-2 border-t-transparent border-red-500 rounded-full animate-spin" />
+              ) : (
+                <Trash2 size={14} />
+              )}
             </button>
           </div>
         </div>

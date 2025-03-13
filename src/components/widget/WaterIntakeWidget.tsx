@@ -18,6 +18,7 @@ export default function WaterIntakeWidget() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [waterAmount, setWaterAmount] = useState(200);
+  const [isAddingWater, setIsAddingWater] = useState(false);
 
   // Listen for water-added events from other components (like FloatingActionButton)
   useEffect(() => {
@@ -60,6 +61,8 @@ export default function WaterIntakeWidget() {
 
   const handleQuickAdd = async () => {
     try {
+      setIsAddingWater(true);
+      
       const response = await fetch('/api/water', {
         method: 'POST',
         headers: {
@@ -80,6 +83,8 @@ export default function WaterIntakeWidget() {
       refreshWaterIntake();
     } catch (error) {
       console.error('Error adding water:', error);
+    } finally {
+      setIsAddingWater(false);
     }
   };
 
@@ -172,10 +177,17 @@ export default function WaterIntakeWidget() {
                 </svg>
               </button>
               <div 
-                className="col-span-2 bg-gray-50 p-2 rounded text-center text-xs font-medium cursor-pointer"
-                onClick={handleQuickAdd}
+                className={`col-span-2 bg-gray-50 p-2 rounded text-center text-xs font-medium ${isAddingWater ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-gray-100'}`}
+                onClick={!isAddingWater ? handleQuickAdd : undefined}
               >
-                {waterAmount} ml
+                {isAddingWater ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-3 h-3 border-2 border-t-transparent border-blue-500 rounded-full animate-spin mr-1"></div>
+                    <span>Adding...</span>
+                  </div>
+                ) : (
+                  `${waterAmount} ml`
+                )}
               </div>
               <button 
                 onClick={handleDecreaseAmount}

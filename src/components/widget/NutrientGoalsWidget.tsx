@@ -116,20 +116,27 @@ export default function NutrientGoalsWidget({ refreshTrigger = 0, userGoals }: N
     return (
       <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
         <div className="border-b border-gray-100 px-5 py-4">
-          <h2 className="text-xl font-medium text-gray-900">Nutrient Goals</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-medium text-gray-900">Nutrient Goals</h2>
+            <div className="w-24 h-8 bg-gray-200 rounded-md"></div>
+          </div>
         </div>
-        <div className="p-5 flex justify-center items-center">
-          <div className="animate-pulse flex space-x-4">
-            <div className="flex-1 space-y-6 py-1">
-              <div className="h-2 bg-gray-200 rounded"></div>
-              <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="h-2 bg-gray-200 rounded col-span-2"></div>
-                  <div className="h-2 bg-gray-200 rounded col-span-1"></div>
+        <div className="p-5">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="h-12">
+                <div className="flex justify-between items-center mb-1">
+                  <div className="w-16 h-4 bg-gray-200 rounded"></div>
+                  <div className="w-24 h-4 bg-gray-200 rounded"></div>
                 </div>
-                <div className="h-2 bg-gray-200 rounded"></div>
+                <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
+                  <div className="bg-gray-200 h-1.5 rounded-full w-1/3"></div>
+                </div>
               </div>
-            </div>
+            ))}
+          </div>
+          <div className="flex justify-center mt-4">
+            <div className="w-8 h-8 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
           </div>
         </div>
       </div>

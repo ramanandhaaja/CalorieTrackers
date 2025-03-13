@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Save, AlertCircle } from 'lucide-react';
+import useSWR, { mutate } from 'swr';
 import { useSidebar } from '@/components/layout/SidebarContext';
 import SidebarToggleButton from '@/components/layout/SidebarToggleButton';
 
@@ -63,12 +64,12 @@ const dietaryPreferencesOptions = [
   { id: 'low-carb', label: 'Low-carb' },
 ];
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function SettingsPage() {
   const router = useRouter();
   const { toggle } = useSidebar();
   const [loading, setLoading] = useState(false);
-  const [fetchingData, setFetchingData] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [userDetailsId, setUserDetailsId] = useState<string | null>(null);
   
   // Form state
@@ -88,28 +89,31 @@ export default function SettingsPage() {
     tdee: 0,
   });
 
-  // Fetch user details on component mount
-  useEffect(() => {
-    async function fetchUserDetails() {
-      try {
-        setFetchingData(true);
-        setError(null);
+  // Use SWR for data fetching
+  const { data, error: swrError, isLoading, mutate } = useSWR('/api/user-details', async (url) => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to fetch user details');
+    }
+    const data = await response.json();
+    console.log('SWR data fetched:', data);
+    return data;
+  }, {
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    dedupingInterval: 10000, // Dedupe requests within 10 seconds
+    onSuccess: (data) => {
+      if (data?.docs && data.docs.length > 0) {
+        const userDetails = data.docs[0];
+        console.log('User details from SWR:', userDetails);
+        console.log('Gender value:', userDetails.gender);
         
-        const response = await fetch('/api/user-details');
+        setUserDetailsId(userDetails.id);
         
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch user details');
-        }
-        
-        const data = await response.json();
-        
-        if (data.docs && data.docs.length > 0) {
-          const userDetails = data.docs[0];
-          setUserDetailsId(userDetails.id);
-          
-          // Update form values with user details
-          setFormValues({
+        // Update form values with user details
+        setFormValues(prevValues => {
+          const newValues = {
             age: userDetails.age || 30,
             gender: userDetails.gender || 'not-specified',
             height: userDetails.height || { value: 170, unit: 'cm' },
@@ -123,88 +127,95 @@ export default function SettingsPage() {
             dailyFat: userDetails.dailyFat || 65,
             bmr: userDetails.bmr || 0,
             tdee: userDetails.tdee || 0,
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching user details:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch user details');
-      } finally {
-        setFetchingData(false);
+          };
+          
+          console.log('Setting form values:', newValues);
+          return newValues;
+        });
       }
+    },
+    onError: (err) => {
+      console.error('SWR error:', err);
+      setErrorState(err.message || 'Failed to fetch user details');
     }
-    
-    fetchUserDetails();
-  }, []);
+  });
+
+  const [errorState, setErrorState] = useState<string | null>(null);
+  
+  // Set error state if SWR returns an error
+  useEffect(() => {
+    if (swrError) {
+      setErrorState(swrError.message || 'Failed to fetch user details');
+    }
+  }, [swrError]);
 
   // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setErrorState(null);
+    
+    // Log form values before submission
+    console.log('Submitting form values:', formValues);
+    console.log('Gender value being submitted:', formValues.gender);
     
     try {
       let response;
+      const requestData = {
+        age: formValues.age,
+        gender: formValues.gender || 'not-specified', // Ensure gender is never undefined
+        height: formValues.height,
+        weight: formValues.weight,
+        activityLevel: formValues.activityLevel,
+        goal: formValues.goal,
+        dietaryPreferences: formValues.dietaryPreferences,
+        dailyCalorieTarget: formValues.dailyCalorieTarget,
+        dailyProtein: formValues.dailyProtein,
+        dailyCarbs: formValues.dailyCarbs,
+        dailyFat: formValues.dailyFat,
+        bmr: formValues.bmr,
+        tdee: formValues.tdee,
+      };
       
       if (userDetailsId) {
         // Update existing user details
+        console.log('Updating user details with ID:', userDetailsId);
         response = await fetch('/api/user-details', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            age: formValues.age,
-            gender: formValues.gender,
-            height: formValues.height,
-            weight: formValues.weight,
-            activityLevel: formValues.activityLevel,
-            goal: formValues.goal,
-            dietaryPreferences: formValues.dietaryPreferences,
-            dailyCalorieTarget: formValues.dailyCalorieTarget,
-            dailyProtein: formValues.dailyProtein,
-            dailyCarbs: formValues.dailyCarbs,
-            dailyFat: formValues.dailyFat,
-            bmr: formValues.bmr,
-            tdee: formValues.tdee,
-          }),
+          body: JSON.stringify(requestData),
         });
       } else {
         // Create new user details
+        console.log('Creating new user details');
         response = await fetch('/api/user-details', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            age: formValues.age,
-            gender: formValues.gender,
-            height: formValues.height,
-            weight: formValues.weight,
-            activityLevel: formValues.activityLevel,
-            goal: formValues.goal,
-            dietaryPreferences: formValues.dietaryPreferences,
-            dailyCalorieTarget: formValues.dailyCalorieTarget,
-            dailyProtein: formValues.dailyProtein,
-            dailyCarbs: formValues.dailyCarbs,
-            dailyFat: formValues.dailyFat,
-            bmr: formValues.bmr,
-            tdee: formValues.tdee,
-          }),
+          body: JSON.stringify(requestData),
         });
       }
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('API error response:', errorData);
         throw new Error(errorData.error || 'Failed to save user details');
       }
       
-      const data = await response.json();
-      setUserDetailsId(data.id);
+      const responseData = await response.json();
+      console.log('API success response:', responseData);
+      setUserDetailsId(responseData.id);
+      
+      // Update the SWR cache with the new data
+      mutate();
       
       toast.success('Settings saved successfully!');
     } catch (err) {
       console.error('Error saving user details:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save user details');
+      setErrorState(err instanceof Error ? err.message : 'Failed to save user details');
       toast.error('Failed to save settings');
     } finally {
       setLoading(false);
@@ -339,7 +350,7 @@ export default function SettingsPage() {
     toast.success('Metabolic rates and nutrition goals calculated!');
   };
 
-  if (fetchingData) {
+  if (isLoading) {
     return (
       <div className="flex h-[80vh] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -355,11 +366,11 @@ export default function SettingsPage() {
         <SidebarToggleButton />
       </div>
       
-      {error && (
+      {errorState && (
         <Alert className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{errorState}</AlertDescription>
         </Alert>
       )}
       
@@ -399,9 +410,11 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
                     <Select
-                    
-                      value={formValues.gender}
-                      onValueChange={(value) => handleInputChange('gender', value)}
+                      value={formValues.gender || 'not-specified'}
+                      onValueChange={(value: 'male' | 'female' | 'not-specified') => {
+                        console.log('Gender selected:', value);
+                        handleInputChange('gender', value);
+                      }}
                     >
                       <SelectTrigger id="gender">
                         <SelectValue placeholder="Select gender" />
