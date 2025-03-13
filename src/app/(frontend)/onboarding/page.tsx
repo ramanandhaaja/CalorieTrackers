@@ -91,12 +91,93 @@ export default function OnboardingPage() {
 
   const handleSubmit = async () => {
     try {
+      // Calculate BMR, TDEE, and nutrition goals based on user data
+      const age = parseInt(formData.age);
+      const gender = formData.gender;
+      const weightValue = parseFloat(formData.weight.value);
+      const weightInKg = formData.weight.unit === 'kg' ? weightValue : weightValue * 0.453592;
+      
+      // Calculate height in cm
+      const heightValue = parseFloat(formData.height.value);
+      let heightInCm = formData.height.unit === 'cm' ? heightValue : 0;
+      if (formData.height.unit === 'ft') {
+        const inches = parseFloat(formData.height.inches || '0');
+        heightInCm = (heightValue * 30.48) + (inches * 2.54);
+      }
+      
+      // Calculate BMR using Mifflin-St Jeor Equation
+      let bmr = 0;
+      if (gender === 'male') {
+        bmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) + 5;
+      } else if (gender === 'female') {
+        bmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) - 161;
+      } else {
+        // For non-specified gender, use average of male and female formulas
+        const maleBmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) + 5;
+        const femaleBmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) - 161;
+        bmr = Math.round((maleBmr + femaleBmr) / 2);
+      }
+      
+      // Calculate TDEE based on activity level
+      let activityMultiplier = 1.2; // Default: Sedentary
+      
+      switch (formData.activityLevel) {
+        case 'sedentary':
+          activityMultiplier = 1.2;
+          break;
+        case 'light':
+          activityMultiplier = 1.375;
+          break;
+        case 'moderate':
+          activityMultiplier = 1.55;
+          break;
+        case 'very':
+          activityMultiplier = 1.725;
+          break;
+        case 'extra':
+          activityMultiplier = 1.9;
+          break;
+      }
+      
+      const tdee = Math.round(bmr * activityMultiplier);
+      
+      // Calculate target calories based on goal
+      let dailyCalorieTarget = tdee; // Default: maintain weight
+      
+      switch (formData.goal) {
+        case 'lose':
+          dailyCalorieTarget = Math.round(tdee * 0.8); // 20% deficit
+          break;
+        case 'gain':
+          dailyCalorieTarget = Math.round(tdee * 1.15); // 15% surplus
+          break;
+        case 'build':
+          dailyCalorieTarget = Math.round(tdee * 1.1); // 10% surplus
+          break;
+      }
+      
+      // Calculate macronutrient goals
+      const dailyProtein = Math.round(weightInKg * (formData.goal === 'build' ? 2.2 : 1.8)); // Higher protein for muscle building
+      const dailyFat = Math.round((dailyCalorieTarget * 0.25) / 9); // 25% of calories from fat
+      const dailyCarbs = Math.round((dailyCalorieTarget - (dailyProtein * 4) - (dailyFat * 9)) / 4); // Remaining calories from carbs
+      
+      // Prepare data with correct field names
+      const userDetailsData = {
+        ...formData,
+        bmr: Math.round(bmr),
+        tdee,
+        dailyCalorieTarget,
+        dailyProtein,
+        dailyCarbs,
+        dailyFat
+      };
+      
       const response = await fetch('/api/user-details', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(userDetailsData),
         credentials: 'include' // This ensures cookies are sent with the request
       });
   
