@@ -7,28 +7,38 @@ import { useSidebar } from './SidebarContext';
 import { useAuth } from '../../hooks/useAuth';
 
 interface SidebarProps {
-  username: string;
+  username?: string;
+  isOpen?: boolean;
+  toggleSidebar?: () => void;
 }
 
-export default function Sidebar({ username }: SidebarProps) {
+export default function Sidebar({ username, isOpen: propIsOpen, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
-  const { isOpen, toggle, close } = useSidebar();
+  const { isOpen: contextIsOpen, toggle, close } = useSidebar();
   const { logout } = useAuth();
+  
+  // Use props if provided, otherwise use context
+  const sidebarOpen = propIsOpen !== undefined ? propIsOpen : contextIsOpen;
+  const toggleSidebarFn = toggleSidebar || toggle;
   
   // Function to handle link clicks on mobile
   const handleLinkClick = () => {
     if (window.innerWidth < 768) {
-      close();
+      if (toggleSidebar) {
+        toggleSidebar();
+      } else {
+        close();
+      }
     }
   };
   
   return (
     <>
       {/* Mobile overlay */}
-      {isOpen && (
+      {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-gray-600 bg-opacity-75 z-20 md:hidden" 
-          onClick={() => toggle()}
+          onClick={() => toggleSidebarFn()}
           aria-hidden="true"
         />
       )}
@@ -37,7 +47,7 @@ export default function Sidebar({ username }: SidebarProps) {
       <div 
         className={`
           fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform 
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
           transition-transform duration-300 ease-in-out md:relative md:translate-x-0
           md:sticky md:top-0 md:h-screen
         `}
@@ -50,7 +60,7 @@ export default function Sidebar({ username }: SidebarProps) {
               <p className="text-sm text-gray-500">{username}</p>
             </div>
             <button 
-              onClick={toggle} 
+              onClick={toggleSidebarFn} 
               className="md:hidden p-2 rounded-md text-gray-500 hover:text-blue-500 hover:bg-gray-100"
               aria-label="Close sidebar"
             >
