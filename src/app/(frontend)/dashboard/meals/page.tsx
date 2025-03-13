@@ -192,10 +192,13 @@ export default function MealsPage() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-3xl font-bold">Meal History</h1>
+        <div className="mb-6 flex items-center justify-between w-full">
+          <h1 className="text-3xl font-bold">Meal History</h1>
+          <SidebarToggleButton />
+        </div>
         
         <div className="flex items-center gap-2">
-          <SidebarToggleButton />
+         
           
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="px-3 py-1">
