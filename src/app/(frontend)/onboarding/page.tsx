@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 // Define the steps for onboarding
 const STEPS = {
@@ -59,6 +60,7 @@ export default function OnboardingPage() {
     goal: "",
     dietaryPreferences: [],
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateFormData = <K extends keyof FormData>(field: K, value: FormData[K]) => {
     setFormData((prev) => ({
@@ -91,6 +93,11 @@ export default function OnboardingPage() {
 
   const handleSubmit = async () => {
     try {
+      console.log('Starting onboarding submission...');
+      
+      // Set loading state
+      setIsSubmitting(true);
+      
       // Calculate BMR, TDEE, and nutrition goals based on user data
       const age = parseInt(formData.age);
       const gender = formData.gender;
@@ -172,6 +179,9 @@ export default function OnboardingPage() {
         dailyFat
       };
       
+      console.log('Sending user details to API:', JSON.stringify(userDetailsData));
+      
+      // Now save the user details
       const response = await fetch('/api/user-details', {
         method: 'POST',
         headers: {
@@ -181,16 +191,28 @@ export default function OnboardingPage() {
         credentials: 'include' // This ensures cookies are sent with the request
       });
   
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save user details');
+        throw new Error(responseData.error || 'Failed to save user details');
       }
-  
-      // Redirect to dashboard after successful submission
-      router.push('/dashboard');
+      
+      console.log('User details saved successfully:', responseData);
+      
+      // Show success toast
+      toast.success('Profile setup complete! Redirecting to dashboard...');
+      
+      // Use a short delay before redirecting to allow the toast to be seen
+      setTimeout(() => {
+        // Force a hard navigation to dashboard
+        window.location.href = '/dashboard';
+      }, 1500);
+      
     } catch (error) {
       console.error('Error saving user details:', error);
-      // Handle error (show error message to user)
+      setIsSubmitting(false);
+      // Show error toast
+      toast.error('Error saving user details: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -472,10 +494,22 @@ export default function OnboardingPage() {
               </div>
             </div>
             <div className="flex justify-between">
-              <Button variant="outline" onClick={handleBack}>
+              <Button variant="outline" onClick={handleBack} disabled={isSubmitting}>
                 Back
               </Button>
-              <Button onClick={handleSubmit}>Complete Setup</Button>
+              <Button onClick={handleSubmit} disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <div className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </div>
+                ) : (
+                  'Complete Setup'
+                )}
+              </Button>
             </div>
           </div>
         )}

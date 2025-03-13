@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
@@ -48,6 +48,8 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
   const [activeTab, setActiveTab] = useState('manual');
   const [showAiForm, setShowAiForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAnalyzingPhoto, setIsAnalyzingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset form when modal opens/closes or when initialFoodData changes
   useEffect(() => {
@@ -88,6 +90,67 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
   const handleAskAiClick = () => {
     setActiveTab('ai');
     setShowAiForm(true);
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+    
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+    
+    setIsAnalyzingPhoto(true);
+    
+    try {
+      // Create FormData to send the file
+      const formData = new FormData();
+      formData.append('foodImage', file);
+      
+      toast.info('Analyzing your food photo...');
+      
+      // Upload and analyze the image
+      const response = await fetch('/api/ai/nutrition/image', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to analyze food image');
+      }
+      
+      // Get the AI-generated description and nutritional data
+      const data = await response.json();
+      
+      // Update the AI prompt with the description
+      setAiPrompt(data.description);
+      
+      // If nutritional data is available, update the form
+      if (data.nutritionData) {
+        setFoodData(data.nutritionData);
+        toast.success('Food analyzed! Please review and edit if needed.');
+      }
+    } catch (error) {
+      console.error('Error analyzing food photo:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to analyze your food photo');
+    } finally {
+      setIsAnalyzingPhoto(false);
+    }
+  };
+
+  const handleTakePhotoClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleAiSubmit = async (e: React.FormEvent) => {
@@ -378,9 +441,43 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
             {showAiForm ? (
               <form onSubmit={handleAiSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="aiPrompt" className="block text-sm font-medium text-gray-700 mb-1">
-                    Describe your meal
-                  </label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label htmlFor="aiPrompt" className="block text-sm font-medium text-gray-700">
+                      Describe your meal
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleTakePhotoClick}
+                      className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-4 font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                      disabled={isAnalyzingPhoto}
+                    >
+                      {isAnalyzingPhoto ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          Take Photo
+                        </>
+                      )}
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                  </div>
                   <textarea
                     id="aiPrompt"
                     value={aiPrompt}

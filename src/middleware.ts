@@ -32,6 +32,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Important: Do not redirect back to onboarding if user is already there
+  // This prevents redirect loops when completing onboarding
+  if (pathname === '/onboarding') {
+    return NextResponse.next();
+  }
+
   return NextResponse.next();
 }
 
