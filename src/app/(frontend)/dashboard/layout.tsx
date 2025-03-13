@@ -11,33 +11,21 @@ async function isUserLoggedIn() {
   return Boolean(token)
 }
 
-// Function to get the user's information from the server
+// Function to get the user's information from the cookie
 async function getUserInfo() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
     const cookieStore = await cookies()
-    const token = cookieStore.get('payload-token')?.value || ''
+    const username = cookieStore.get('user-name')?.value
     
-    const response = await fetch(`${baseUrl}/api/users/me`, {
-      method:'GET',
-      credentials: 'include',
-      cache: 'no-store',
-      headers: {
-        Cookie: `payload-token=${token}`,
-        'Content-Type': 'application/json',
-      },
-    })
-    
-    if (!response.ok) {
-      return { username: 'User' }
+    // If username cookie exists, use it (decode it first)
+    if (username) {
+      return { username: decodeURIComponent(username) }
     }
     
-    const data = await response.json()
-    return { 
-      username: data.user?.username || data.user?.email || 'User'
-    }
+    // Fallback to default if cookie doesn't exist
+    return { username: 'User' }
   } catch (error) {
-    console.error('Error fetching user info:', error)
+    console.error('Error getting username from cookie:', error)
     return { username: 'User' }
   }
 }

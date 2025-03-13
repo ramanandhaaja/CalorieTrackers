@@ -61,6 +61,10 @@ export default function LoginForm() {
       // The cookie will be automatically sent with subsequent requests
       document.cookie = `payload-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax` // 7 days expiry
       
+      // Also store the username in a separate cookie for easy access
+      const username = data.user?.username || data.user?.email || 'User'
+      document.cookie = `user-name=${encodeURIComponent(username)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax` // 7 days expiry
+      
       // Redirect to app page on success - use replace instead of push to avoid history entry
       router.replace('/dashboard')
       // Don't reset loading state here - let it remain until navigation completes or errors
