@@ -41,10 +41,12 @@ interface UserDetailsFormValues {
   activityLevel: 'sedentary' | 'light' | 'moderate' | 'very' | 'extra';
   goal: 'lose' | 'maintain' | 'gain' | 'build';
   dietaryPreferences: string[];
-  calorieGoal?: number;
-  proteinGoal?: number;
-  carbsGoal?: number;
-  fatGoal?: number;
+  dailyCalorieTarget?: number;
+  dailyProtein?: number;
+  dailyCarbs?: number;
+  dailyFat?: number;
+  bmr?: number;
+  tdee?: number;
 }
 
 // Dietary preferences options
@@ -75,10 +77,12 @@ export default function SettingsPage() {
     activityLevel: 'moderate',
     goal: 'maintain',
     dietaryPreferences: [],
-    calorieGoal: 2000,
-    proteinGoal: 150,
-    carbsGoal: 200,
-    fatGoal: 65,
+    dailyCalorieTarget: 2000,
+    dailyProtein: 150,
+    dailyCarbs: 200,
+    dailyFat: 65,
+    bmr: 0,
+    tdee: 0,
   });
 
   // Fetch user details on component mount
@@ -110,10 +114,12 @@ export default function SettingsPage() {
             activityLevel: userDetails.activityLevel || 'moderate',
             goal: userDetails.goal || 'maintain',
             dietaryPreferences: userDetails.dietaryPreferences || [],
-            calorieGoal: userDetails.calorieGoal || 2000,
-            proteinGoal: userDetails.proteinGoal || 150,
-            carbsGoal: userDetails.carbsGoal || 200,
-            fatGoal: userDetails.fatGoal || 65,
+            dailyCalorieTarget: userDetails.dailyCalorieTarget || 2000,
+            dailyProtein: userDetails.dailyProtein || 150,
+            dailyCarbs: userDetails.dailyCarbs || 200,
+            dailyFat: userDetails.dailyFat || 65,
+            bmr: userDetails.bmr || 0,
+            tdee: userDetails.tdee || 0,
           });
         }
       } catch (err) {
@@ -143,7 +149,21 @@ export default function SettingsPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formValues),
+          body: JSON.stringify({
+            age: formValues.age,
+            gender: formValues.gender,
+            height: formValues.height,
+            weight: formValues.weight,
+            activityLevel: formValues.activityLevel,
+            goal: formValues.goal,
+            dietaryPreferences: formValues.dietaryPreferences,
+            dailyCalorieTarget: formValues.dailyCalorieTarget,
+            dailyProtein: formValues.dailyProtein,
+            dailyCarbs: formValues.dailyCarbs,
+            dailyFat: formValues.dailyFat,
+            bmr: formValues.bmr,
+            tdee: formValues.tdee,
+          }),
         });
       } else {
         // Create new user details
@@ -152,7 +172,21 @@ export default function SettingsPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formValues),
+          body: JSON.stringify({
+            age: formValues.age,
+            gender: formValues.gender,
+            height: formValues.height,
+            weight: formValues.weight,
+            activityLevel: formValues.activityLevel,
+            goal: formValues.goal,
+            dietaryPreferences: formValues.dietaryPreferences,
+            dailyCalorieTarget: formValues.dailyCalorieTarget,
+            dailyProtein: formValues.dailyProtein,
+            dailyCarbs: formValues.dailyCarbs,
+            dailyFat: formValues.dailyFat,
+            bmr: formValues.bmr,
+            tdee: formValues.tdee,
+          }),
         });
       }
       
@@ -217,6 +251,91 @@ export default function SettingsPage() {
     });
   };
 
+  // Calculate BMR and TDEE based on user data
+  const calculateMetabolicRates = () => {
+    // Get user data
+    const { age, gender, weight, height, activityLevel, goal } = formValues;
+    
+    // Convert weight to kg if in lbs
+    const weightInKg = weight.unit === 'kg' ? weight.value : weight.value * 0.453592;
+    
+    // Convert height to cm if in ft/inches
+    let heightInCm = height.unit === 'cm' ? height.value : 0;
+    if (height.unit === 'ft') {
+      heightInCm = (height.value * 30.48) + ((height.inches || 0) * 2.54);
+    }
+    
+    // Calculate BMR using Mifflin-St Jeor Equation
+    let bmr = 0;
+    if (gender === 'male') {
+      bmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) + 5;
+    } else if (gender === 'female') {
+      bmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) - 161;
+    } else {
+      // For non-specified gender, use average of male and female formulas
+      const maleBmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) + 5;
+      const femaleBmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) - 161;
+      bmr = Math.round((maleBmr + femaleBmr) / 2);
+    }
+    
+    // Calculate TDEE based on activity level
+    let activityMultiplier = 1.2; // Default: Sedentary
+    
+    switch (activityLevel) {
+      case 'sedentary':
+        activityMultiplier = 1.2;
+        break;
+      case 'light':
+        activityMultiplier = 1.375;
+        break;
+      case 'moderate':
+        activityMultiplier = 1.55;
+        break;
+      case 'very':
+        activityMultiplier = 1.725;
+        break;
+      case 'extra':
+        activityMultiplier = 1.9;
+        break;
+    }
+    
+    const tdee = Math.round(bmr * activityMultiplier);
+    
+    // Calculate target calories based on goal
+    let calorieGoal = tdee; // Default: maintain weight
+    
+    switch (goal) {
+      case 'lose':
+        calorieGoal = Math.round(tdee * 0.8); // 20% deficit
+        break;
+      case 'gain':
+        calorieGoal = Math.round(tdee * 1.15); // 15% surplus
+        break;
+      case 'build':
+        calorieGoal = Math.round(tdee * 1.1); // 10% surplus
+        break;
+    }
+    
+    // Calculate macronutrient goals
+    const proteinGoal = Math.round(weightInKg * (goal === 'build' ? 2.2 : 1.8)); // Higher protein for muscle building
+    const fatGoal = Math.round((calorieGoal * 0.25) / 9); // 25% of calories from fat
+    const carbGoal = Math.round((calorieGoal - (proteinGoal * 4) - (fatGoal * 9)) / 4); // Remaining calories from carbs
+    
+    // Update form values
+    setFormValues(prev => ({
+      ...prev,
+      bmr: Math.round(bmr),
+      tdee,
+      dailyCalorieTarget: calorieGoal,
+      dailyProtein: proteinGoal,
+      dailyCarbs: carbGoal,
+      dailyFat: fatGoal,
+    }));
+    
+    // Show success message
+    toast.success('Metabolic rates and nutrition goals calculated!');
+  };
+
   if (fetchingData) {
     return (
       <div className="flex h-[80vh] w-full items-center justify-center">
@@ -231,7 +350,7 @@ export default function SettingsPage() {
       <h1 className="mb-6 text-3xl font-bold">Profile Settings</h1>
       
       {error && (
-        <Alert variant="destructive" className="mb-6">
+        <Alert className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
@@ -239,15 +358,16 @@ export default function SettingsPage() {
       )}
       
       <form onSubmit={handleSubmit}>
-        <Tabs defaultValue="personal" className="w-full">
-          <TabsList className="mb-6 grid w-full grid-cols-3">
-            <TabsTrigger value="personal">Personal Information</TabsTrigger>
+        <Tabs defaultValue="profile" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="health">Health & Fitness</TabsTrigger>
             <TabsTrigger value="goals">Nutrition Goals</TabsTrigger>
+            <TabsTrigger value="account">Account</TabsTrigger>
           </TabsList>
           
-          {/* Personal Information Tab */}
-          <TabsContent value="personal">
+          {/* Profile Tab */}
+          <TabsContent value="profile">
             <Card>
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
@@ -375,7 +495,7 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle>Health & Fitness</CardTitle>
                 <CardDescription>
-                  Update your activity level, goals, and dietary preferences.
+                  Update your health and fitness information to get personalized recommendations.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -397,6 +517,7 @@ export default function SettingsPage() {
                       <SelectItem value="extra">Extra active (very hard exercise & physical job or 2x training)</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-gray-500">Your activity level affects your daily calorie needs (TDEE calculation)</p>
                 </div>
                 
                 {/* Goal */}
@@ -416,6 +537,7 @@ export default function SettingsPage() {
                       <SelectItem value="build">Build muscle</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-gray-500">Your goal determines your target calorie intake</p>
                 </div>
                 
                 <Separator className="my-4" />
@@ -441,6 +563,21 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 
+                <div className="mt-4 flex justify-end">
+                  <Button 
+                    type="button" 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => {
+                      const goalsTab = document.querySelector('[data-value="goals"]');
+                      if (goalsTab instanceof HTMLElement) {
+                        goalsTab.click();
+                      }
+                    }}
+                  >
+                    Continue to Nutrition Goals →
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -448,64 +585,141 @@ export default function SettingsPage() {
           {/* Nutrition Goals Tab */}
           <TabsContent value="goals">
             <Card>
-              <CardHeader>
-                <CardTitle>Nutrition Goals</CardTitle>
-                <CardDescription>
-                  Set your daily nutrition targets for tracking progress.
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Nutrition Goals</CardTitle>
+                  <CardDescription>
+                    Set your daily nutrition targets for tracking progress.
+                  </CardDescription>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={calculateMetabolicRates}
+                >
+                  Calculate BMR & Goals
+                </Button>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Alert about Health & Fitness connection */}
+                <Alert className="bg-blue-50 text-blue-800 border-blue-200">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Health & Fitness Connection</AlertTitle>
+                  <AlertDescription>
+                    Your BMR, TDEE, and nutrition goals are calculated based on your age, gender, height, weight, activity level, and goal from the Health & Fitness tab.
+                  </AlertDescription>
+                </Alert>
+                
+                {/* Metabolic Information */}
+                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
+                    Metabolic Information
+                  </h3>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {/* BMR */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bmr">Basal Metabolic Rate (BMR)</Label>
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          id="bmr"
+                          type="number"
+                          min={0}
+                          max={10000}
+                          value={formValues.bmr}
+                          onChange={(e) => handleInputChange('bmr', parseInt(e.target.value) || 0)}
+                        />
+                        <span className="text-sm text-gray-500">kcal/day</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Calories your body needs at complete rest. Calculated using the Mifflin-St Jeor Equation.</p>
+                    </div>
+                    
+                    {/* TDEE */}
+                    <div className="space-y-2">
+                      <Label htmlFor="tdee">Total Daily Energy Expenditure (TDEE)</Label>
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          id="tdee"
+                          type="number"
+                          min={0}
+                          max={10000}
+                          value={formValues.tdee}
+                          onChange={(e) => handleInputChange('tdee', parseInt(e.target.value) || 0)}
+                        />
+                        <span className="text-sm text-gray-500">kcal/day</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Total calories burned per day including activity. Calculated as BMR × activity multiplier (1.2-1.9).</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-blue-50 rounded-md text-xs text-blue-700">
+                    <p className="font-medium mb-1">About these calculations:</p>
+                    <ul className="list-disc pl-4 space-y-1">
+                      <li><strong>BMR Formula:</strong> Uses Mifflin-St Jeor Equation (10 × weight kg) + (6.25 × height cm) - (5 × age) + gender factor</li>
+                      <li><strong>Activity Multipliers:</strong> Sedentary (1.2), Light (1.375), Moderate (1.55), Very active (1.725), Extra active (1.9)</li>
+                      <li><strong>Calorie Goals:</strong> Based on your goal - Lose weight (20% deficit), Maintain (TDEE), Gain (15% surplus), Build muscle (10% surplus)</li>
+                      <li><strong>Macronutrients:</strong> Protein (1.8-2.2g per kg bodyweight), Fat (25% of calories), Carbs (remaining calories)</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
+                  Daily Targets
+                </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   {/* Calorie Goal */}
                   <div className="space-y-2">
-                    <Label htmlFor="calorieGoal">Daily Calorie Goal (kcal)</Label>
+                    <Label htmlFor="dailyCalorieTarget">Daily Calorie Goal (kcal)</Label>
                     <Input
-                      id="calorieGoal"
+                      id="dailyCalorieTarget"
                       type="number"
                       min={500}
                       max={10000}
-                      value={formValues.calorieGoal}
-                      onChange={(e) => handleInputChange('calorieGoal', parseInt(e.target.value) || 0)}
+                      value={formValues.dailyCalorieTarget}
+                      onChange={(e) => handleInputChange('dailyCalorieTarget', parseInt(e.target.value) || 0)}
                     />
                   </div>
                   
                   {/* Protein Goal */}
                   <div className="space-y-2">
-                    <Label htmlFor="proteinGoal">Daily Protein Goal (g)</Label>
+                    <Label htmlFor="dailyProtein">Daily Protein Goal (g)</Label>
                     <Input
-                      id="proteinGoal"
+                      id="dailyProtein"
                       type="number"
                       min={0}
                       max={1000}
-                      value={formValues.proteinGoal}
-                      onChange={(e) => handleInputChange('proteinGoal', parseInt(e.target.value) || 0)}
+                      value={formValues.dailyProtein}
+                      onChange={(e) => handleInputChange('dailyProtein', parseInt(e.target.value) || 0)}
                     />
+                    <p className="text-xs text-gray-500">Recommended: {Math.round((formValues.weight?.unit === 'kg' ? formValues.weight?.value : formValues.weight?.value * 0.453592) * 1.8)}g</p>
                   </div>
                   
                   {/* Carbs Goal */}
                   <div className="space-y-2">
-                    <Label htmlFor="carbsGoal">Daily Carbs Goal (g)</Label>
+                    <Label htmlFor="dailyCarbs">Daily Carbs Goal (g)</Label>
                     <Input
-                      id="carbsGoal"
+                      id="dailyCarbs"
                       type="number"
                       min={0}
                       max={1000}
-                      value={formValues.carbsGoal}
-                      onChange={(e) => handleInputChange('carbsGoal', parseInt(e.target.value) || 0)}
+                      value={formValues.dailyCarbs}
+                      onChange={(e) => handleInputChange('dailyCarbs', parseInt(e.target.value) || 0)}
                     />
+                    <p className="text-xs text-gray-500">Typically 45-65% of total calories</p>
                   </div>
                   
                   {/* Fat Goal */}
                   <div className="space-y-2">
-                    <Label htmlFor="fatGoal">Daily Fat Goal (g)</Label>
+                    <Label htmlFor="dailyFat">Daily Fat Goal (g)</Label>
                     <Input
-                      id="fatGoal"
+                      id="dailyFat"
                       type="number"
                       min={0}
                       max={1000}
-                      value={formValues.fatGoal}
-                      onChange={(e) => handleInputChange('fatGoal', parseInt(e.target.value) || 0)}
+                      value={formValues.dailyFat}
+                      onChange={(e) => handleInputChange('dailyFat', parseInt(e.target.value) || 0)}
                     />
+                    <p className="text-xs text-gray-500">Typically 20-35% of total calories</p>
                   </div>
                 </div>
               </CardContent>

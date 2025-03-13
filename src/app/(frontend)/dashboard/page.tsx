@@ -9,7 +9,7 @@ import DashboardContent from '@/app/(frontend)/dashboard/DashboardContent'
 import { Separator } from '@/components/ui/separator';
 import FoodEntriesWidget from '@/components/widget/FoodEntriesWidget';
 import WeeklyProgressChartWidget from '@/components/widget/WeeklyProgressChartWidget';
-import NutrientGoalsWidget from '@/components/widget/NutrientGoalsWidget';
+import NutrientGoalsWidgetWrapper from '@/components/widget/NutrientGoalsWidgetWrapper';
 
 // Force dynamic rendering for this page since it uses cookies
 export const dynamic = 'force-dynamic';
@@ -50,9 +50,8 @@ export default async function DashboardPage() {
             </div>
             
             {/* Nutrient Goals */}
-            <NutrientGoalsWidget />
+            <NutrientGoalsWidgetWrapper />
             
-          
             {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               {/* Food Diary with Weekly Progress Chart */}
@@ -62,8 +61,6 @@ export default async function DashboardPage() {
               <div className="space-y-5">
                 {/* Water Intake Widget */}
                 <WaterIntakeWidget />
-                
-                {/* Nutrient Goals widget has been moved to the top */}
               </div>
             </div>
           </div>

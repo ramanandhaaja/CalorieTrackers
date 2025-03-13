@@ -9,7 +9,17 @@ interface NutrientData {
   totalFat: number;
 }
 
-export default function NutrientGoalsWidget() {
+interface NutrientGoalsWidgetProps {
+  refreshTrigger?: number;
+  userGoals?: {
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+  };
+}
+
+export default function NutrientGoalsWidget({ refreshTrigger = 0, userGoals }: NutrientGoalsWidgetProps) {
   const [nutrientData, setNutrientData] = useState<NutrientData>({
     totalCalories: 0,
     totalProtein: 0,
@@ -19,12 +29,12 @@ export default function NutrientGoalsWidget() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Define goals
+  // Define goals - use user goals if provided, otherwise use defaults
   const goals = {
-    calories: 2200,
-    protein: 120,
-    carbs: 200,
-    fat: 65
+    calories: userGoals?.calories || 2200,
+    protein: userGoals?.protein || 120,
+    carbs: userGoals?.carbs || 200,
+    fat: userGoals?.fat || 65
   };
 
   // Fetch nutrient data
@@ -52,10 +62,10 @@ export default function NutrientGoalsWidget() {
     }
   };
 
-  // Fetch data on component mount
+  // Fetch data on component mount and when refreshTrigger changes
   useEffect(() => {
     fetchNutrientData();
-  }, []);
+  }, [refreshTrigger]);
 
   // Calculate percentages
   const percentages = {

@@ -262,80 +262,14 @@ export const UserDetails: CollectionConfig = {
       name: 'bmr',
       type: 'number',
       admin: {
-        description: 'Basal Metabolic Rate (calculated)',
-        readOnly: true,
-      },
-      hooks: {
-        beforeChange: [
-          ({ req, operation }) => {
-            if (operation === 'create' && req?.user) {
-              return req.user.id;
-            }
-            return undefined;
-          },
-          
-          ({ value }) => {
-            // Skip calculation if missing required data
-            if (!value || !value.age || !value.gender || !value.weight || !value.height) return null;
-            
-            // Convert weight to kg if needed
-            const weightInKg = value.weight.unit === 'lbs' 
-              ? value.weight.value * 0.453592 
-              : value.weight.value;
-            
-            // Convert height to cm if needed
-            let heightInCm;
-            if (value.height.unit === 'ft') {
-              const feet = value.height.value || 0;
-              const inches = value.height.inches || 0;
-              heightInCm = (feet * 30.48) + (inches * 2.54);
-            } else {
-              heightInCm = value.height.value;
-            }
-            
-            // Calculate BMR using Mifflin-St Jeor Equation
-            let bmr;
-            if (value.gender === 'male') {
-              bmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * value.age) + 5;
-            } else {
-              bmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * value.age) - 161;
-            }
-            
-            return Math.round(bmr);
-          },
-        ],
-      },
+        description: 'Basal Metabolic Rate (calculated)'
+      }
     },
     {
       name: 'tdee',
       type: 'number',
       admin: {
         description: 'Total Daily Energy Expenditure (calculated)',
-        readOnly: true,
-      },
-      hooks: {
-        beforeChange: [
-          ({ value, originalDoc }) => {
-            // Get BMR from original doc or current value
-            const bmr = originalDoc?.bmr || value;
-            
-            // Skip calculation if missing required data
-            if (!bmr || !originalDoc?.activityLevel) return null;
-            
-            // Activity level multipliers
-            const activityMultipliers: Record<string, number> = {
-              sedentary: 1.2,
-              light: 1.375,
-              moderate: 1.55,
-              very: 1.725,
-              extra: 1.9,
-            };
-            
-            // Calculate TDEE
-            const multiplier = activityMultipliers[originalDoc.activityLevel] || 1.2;
-            return Math.round(bmr * multiplier);
-          },
-        ],
       },
     },
     {
@@ -343,31 +277,27 @@ export const UserDetails: CollectionConfig = {
       type: 'number',
       admin: {
         description: 'Daily calorie target based on goals (calculated)',
-        readOnly: true,
       },
-      hooks: {
-        beforeChange: [
-          ({ value, originalDoc }) => {
-            // Get TDEE from original doc or current value
-            const tdee = originalDoc?.tdee || value;
-            
-            // Skip calculation if missing required data
-            if (!tdee || !originalDoc?.goal) return null;
-            
-            // Adjust calories based on goal
-            switch (originalDoc.goal) {
-              case 'lose':
-                return Math.round(tdee * 0.8); // 20% deficit
-              case 'gain':
-                return Math.round(tdee * 1.15); // 15% surplus
-              case 'build':
-                return Math.round(tdee * 1.1); // 10% surplus
-              case 'maintain':
-              default:
-                return Math.round(tdee);
-            }
-          },
-        ],
+    },
+    {
+      name: 'dailyProtein',
+      type: 'number',
+      admin: {
+        description: 'Daily protein target based on goals (calculated)',
+      },
+    },
+    {
+      name: 'dailyCarbs',
+      type: 'number',
+      admin: {
+        description: 'Daily carbohydrate target based on goals (calculated)',
+      },
+    },
+    {
+      name: 'dailyFat',
+      type: 'number',
+      admin: {
+        description: 'Daily fat target based on goals (calculated)',
       },
     },
     

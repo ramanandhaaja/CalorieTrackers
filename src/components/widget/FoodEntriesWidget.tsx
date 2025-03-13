@@ -86,6 +86,9 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
     if (onFoodEntriesUpdated) {
       onFoodEntriesUpdated();
     }
+    
+    // Dispatch a custom event to notify other components
+    window.dispatchEvent(new CustomEvent('food-entries-updated'));
   };
 
   // Handle edit food entry

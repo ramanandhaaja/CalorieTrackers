@@ -341,6 +341,18 @@ export interface UserDetail {
    * Daily calorie target based on goals (calculated)
    */
   dailyCalorieTarget?: number | null;
+  /**
+   * Daily protein target based on goals (calculated)
+   */
+  dailyProtein?: number | null;
+  /**
+   * Daily carbohydrate target based on goals (calculated)
+   */
+  dailyCarbs?: number | null;
+  /**
+   * Daily fat target based on goals (calculated)
+   */
+  dailyFat?: number | null;
   user: number | User;
   updatedAt: string;
   createdAt: string;
@@ -542,6 +554,9 @@ export interface UserDetailsSelect<T extends boolean = true> {
   bmr?: T;
   tdee?: T;
   dailyCalorieTarget?: T;
+  dailyProtein?: T;
+  dailyCarbs?: T;
+  dailyFat?: T;
   user?: T;
   updatedAt?: T;
   createdAt?: T;
