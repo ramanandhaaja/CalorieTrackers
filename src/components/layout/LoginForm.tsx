@@ -61,15 +61,16 @@ export default function LoginForm() {
       // The cookie will be automatically sent with subsequent requests
       document.cookie = `payload-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax` // 7 days expiry
       
-      // Redirect to app page on success
-      router.push('/dashboard')
-      router.refresh() // Refresh to update auth state
+      // Redirect to app page on success - use replace instead of push to avoid history entry
+      router.replace('/dashboard')
+      // Don't reset loading state here - let it remain until navigation completes or errors
 
     } catch (err: any) {
       setError(err.message || 'Invalid email or password')
-    } finally {
+      // Only reset loading state on error
       setLoading(false)
     }
+    // Remove the finally block to keep loading state active during navigation
   }
 
   return (
