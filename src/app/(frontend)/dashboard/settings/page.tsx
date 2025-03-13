@@ -359,11 +359,9 @@ export default function SettingsPage() {
       
       <form onSubmit={handleSubmit}>
         <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="health">Health & Fitness</TabsTrigger>
             <TabsTrigger value="goals">Nutrition Goals</TabsTrigger>
-            <TabsTrigger value="account">Account</TabsTrigger>
           </TabsList>
           
           {/* Profile Tab */}
@@ -486,62 +484,8 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          {/* Health & Fitness Tab */}
-          <TabsContent value="health">
-            <Card>
-              <CardHeader>
-                <CardTitle>Health & Fitness</CardTitle>
-                <CardDescription>
-                  Update your health and fitness information to get personalized recommendations.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Activity Level */}
-                <div className="space-y-2">
-                  <Label htmlFor="activityLevel">Activity Level</Label>
-                  <Select
-                    value={formValues.activityLevel}
-                    onValueChange={(value) => handleInputChange('activityLevel', value)}
-                  >
-                    <SelectTrigger id="activityLevel">
-                      <SelectValue placeholder="Select activity level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sedentary">Sedentary (little or no exercise)</SelectItem>
-                      <SelectItem value="light">Lightly active (light exercise/sports 1-3 days/week)</SelectItem>
-                      <SelectItem value="moderate">Moderately active (moderate exercise/sports 3-5 days/week)</SelectItem>
-                      <SelectItem value="very">Very active (hard exercise/sports 6-7 days a week)</SelectItem>
-                      <SelectItem value="extra">Extra active (very hard exercise & physical job or 2x training)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">Your activity level affects your daily calorie needs (TDEE calculation)</p>
-                </div>
                 
-                {/* Goal */}
-                <div className="space-y-2">
-                  <Label htmlFor="goal">Goal</Label>
-                  <Select
-                    value={formValues.goal}
-                    onValueChange={(value) => handleInputChange('goal', value)}
-                  >
-                    <SelectTrigger id="goal">
-                      <SelectValue placeholder="Select goal" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="lose">Lose weight</SelectItem>
-                      <SelectItem value="maintain">Maintain weight</SelectItem>
-                      <SelectItem value="gain">Gain weight</SelectItem>
-                      <SelectItem value="build">Build muscle</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">Your goal determines your target calorie intake</p>
-                </div>
-                
-                <Separator className="my-4" />
+                <Separator className="my-6" />
                 
                 {/* Dietary Preferences */}
                 <div className="space-y-4">
@@ -562,22 +506,6 @@ export default function SettingsPage() {
                       </div>
                     ))}
                   </div>
-                </div>
-                
-                <div className="mt-4 flex justify-end">
-                  <Button 
-                    type="button" 
-                    variant="default" 
-                    size="sm"
-                    onClick={() => {
-                      const goalsTab = document.querySelector('[data-value="goals"]');
-                      if (goalsTab instanceof HTMLElement) {
-                        goalsTab.click();
-                      }
-                    }}
-                  >
-                    Continue to Nutrition Goals →
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -612,6 +540,50 @@ export default function SettingsPage() {
                   </AlertDescription>
                 </Alert>
                 
+                {/* Activity Level and Goal in a horizontal layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Activity Level */}
+                  <div className="space-y-2">
+                    <Label htmlFor="activityLevel">Activity Level</Label>
+                    <Select
+                      value={formValues.activityLevel}
+                      onValueChange={(value) => handleInputChange('activityLevel', value)}
+                    >
+                      <SelectTrigger id="activityLevel">
+                        <SelectValue placeholder="Select activity level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sedentary">Sedentary (little or no exercise)</SelectItem>
+                        <SelectItem value="light">Lightly active (light exercise/sports 1-3 days/week)</SelectItem>
+                        <SelectItem value="moderate">Moderately active (moderate exercise/sports 3-5 days/week)</SelectItem>
+                        <SelectItem value="very">Very active (hard exercise/sports 6-7 days a week)</SelectItem>
+                        <SelectItem value="extra">Extra active (very hard exercise & physical job or 2x training)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500">Your activity level affects your daily calorie needs (TDEE calculation)</p>
+                  </div>
+                  
+                  {/* Goal */}
+                  <div className="space-y-2">
+                    <Label htmlFor="goal">Goal</Label>
+                    <Select
+                      value={formValues.goal}
+                      onValueChange={(value) => handleInputChange('goal', value)}
+                    >
+                      <SelectTrigger id="goal">
+                        <SelectValue placeholder="Select goal" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="lose">Lose weight</SelectItem>
+                        <SelectItem value="maintain">Maintain weight</SelectItem>
+                        <SelectItem value="gain">Gain weight</SelectItem>
+                        <SelectItem value="build">Build muscle</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500">Your goal determines your target calorie intake</p>
+                  </div>
+                </div>
+                
                 {/* Metabolic Information */}
                 <div className="bg-gray-50 p-4 rounded-lg mb-6">
                   <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
@@ -628,7 +600,7 @@ export default function SettingsPage() {
                           min={0}
                           max={10000}
                           value={formValues.bmr}
-                          onChange={(e) => handleInputChange('bmr', parseInt(e.target.value) || 0)}
+                          readOnly
                         />
                         <span className="text-sm text-gray-500">kcal/day</span>
                       </div>
@@ -645,7 +617,7 @@ export default function SettingsPage() {
                           min={0}
                           max={10000}
                           value={formValues.tdee}
-                          onChange={(e) => handleInputChange('tdee', parseInt(e.target.value) || 0)}
+                          readOnly
                         />
                         <span className="text-sm text-gray-500">kcal/day</span>
                       </div>
