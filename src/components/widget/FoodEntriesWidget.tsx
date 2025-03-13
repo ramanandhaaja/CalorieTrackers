@@ -122,6 +122,9 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
       if (onFoodEntriesUpdated) {
         onFoodEntriesUpdated();
       }
+
+      // Dispatch event to refresh NutrientGoalsWidget
+      window.dispatchEvent(new Event('food-entries-updated'));
     } catch (error) {
       console.error('Error deleting food entry:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to delete food entry');

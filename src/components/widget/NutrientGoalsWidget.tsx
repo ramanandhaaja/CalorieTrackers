@@ -122,19 +122,6 @@ export default function NutrientGoalsWidget({ refreshTrigger = 0, userGoals }: N
           </div>
         </div>
         <div className="p-5">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="h-12">
-                <div className="flex justify-between items-center mb-1">
-                  <div className="w-16 h-4 bg-gray-200 rounded"></div>
-                  <div className="w-24 h-4 bg-gray-200 rounded"></div>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
-                  <div className="bg-gray-200 h-1.5 rounded-full w-1/3"></div>
-                </div>
-              </div>
-            ))}
-          </div>
           <div className="flex justify-center mt-4">
             <div className="w-8 h-8 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
           </div>
