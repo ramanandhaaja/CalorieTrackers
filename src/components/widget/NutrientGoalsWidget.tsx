@@ -42,6 +42,7 @@ export default function NutrientGoalsWidget({ refreshTrigger = 0, userGoals }: N
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Fetch user goals from the API
   const fetchUserGoals = async () => {
@@ -148,8 +149,22 @@ export default function NutrientGoalsWidget({ refreshTrigger = 0, userGoals }: N
       <div className="border-b border-gray-100 px-5 py-4">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-medium text-gray-900">Nutrient Goals</h2>
-          <Link href="/dashboard/settings" className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Change Goals
+          <Link 
+            href="/dashboard/settings" 
+            className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white ${isNavigating ? 'bg-blue-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+            onClick={(e) => {
+              setIsNavigating(true);
+              // The Link component will handle the navigation
+            }}
+          >
+            {isNavigating ? (
+              <div className="flex items-center">
+                <div className="w-3.5 h-3.5 border-2 border-t-transparent border-white rounded-full animate-spin mr-1.5" />
+                <span>Loading...</span>
+              </div>
+            ) : (
+              "Change Goals"
+            )}
           </Link>
         </div>
         
