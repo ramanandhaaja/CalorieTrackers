@@ -441,57 +441,60 @@ async function getHistoricalData(req: NextRequest) {
     // Parse date range from query parameters
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const mealType = searchParams.get('mealType');
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '20', 10);
     
-    if (!startDate || !endDate) {
-      return NextResponse.json(
-        { error: 'Missing required parameters: startDate and endDate' },
-        { status: 400 }
-      );
+    // Create where clause for the query
+    const whereClause: any = {
+      and: [
+        {
+          user: {
+            equals: (await getCurrentUser())?.id
+          }
+        }
+      ]
+    };
+    
+    // Add date range if provided
+    if (startDate && endDate) {
+      whereClause.and.push({
+        date: {
+          greater_than_equal: new Date(startDate).toISOString(),
+          less_than_equal: new Date(endDate + 'T23:59:59.999Z').toISOString()
+        }
+      });
     }
     
-    // Get the current authenticated user
-    const user = await getCurrentUser();
+    // Add meal type filter if provided
+    if (mealType && mealType !== 'all') {
+      whereClause.and.push({
+        mealType: {
+          equals: mealType
+        }
+      });
+    }
     
     // If no user is authenticated, return an error
-    if (!user) {
+    if (!(await getCurrentUser())) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
     
-    // Query food entries for the specified date range
+    // Query food entries for the specified filters
     const foodEntries = await payload.find({
       collection: 'food-entries',
-      where: {
-        and: [
-          {
-            user: {
-              equals: user.id
-            }
-          },
-          {
-            date: {
-              greater_than_equal: startDate,
-              less_than_equal: endDate
-            }
-          }
-        ]
-      },
-      sort: 'date',
+      where: whereClause,
+      sort: '-date', // Sort by date descending (newest first)
+      page,
+      limit,
       depth: 0, // Don't populate references
     });
     
     // Group by date
-    const groupedByDate: Record<string, {
-      totalMacros: {
-        calories: number;
-        protein: number;
-        carbs: number;
-        fat: number;
-      };
-      entries: FoodEntry[];
-    }> = {};
+    const entriesByDate: Record<string, FoodEntry[]> = {};
     
     // Process each food entry
     foodEntries.docs.forEach((entry: FoodEntry) => {
@@ -499,46 +502,45 @@ async function getHistoricalData(req: NextRequest) {
       const dateStr = new Date(entry.date).toISOString().split('T')[0];
       
       // Initialize date group if it doesn't exist
-      if (!groupedByDate[dateStr]) {
-        groupedByDate[dateStr] = {
-          totalMacros: {
-            calories: 0,
-            protein: 0,
-            carbs: 0,
-            fat: 0
-          },
-          entries: []
-        };
+      if (!entriesByDate[dateStr]) {
+        entriesByDate[dateStr] = [];
       }
       
       // Add entry to the date group
-      groupedByDate[dateStr].entries.push(entry);
-      
-      // Add to date totals
-      groupedByDate[dateStr].totalMacros.calories += entry.calories || 0;
-      groupedByDate[dateStr].totalMacros.protein += entry.protein || 0;
-      groupedByDate[dateStr].totalMacros.carbs += entry.carbs || 0;
-      groupedByDate[dateStr].totalMacros.fat += entry.fat || 0;
+      entriesByDate[dateStr].push(entry);
     });
     
     // Calculate overall totals
-    const overallTotals = {
+    const totals = {
       calories: 0,
       protein: 0,
       carbs: 0,
       fat: 0
     };
     
-    Object.values(groupedByDate).forEach((day: any) => {
-      overallTotals.calories += day.totalMacros.calories;
-      overallTotals.protein += day.totalMacros.protein;
-      overallTotals.carbs += day.totalMacros.carbs;
-      overallTotals.fat += day.totalMacros.fat;
+    foodEntries.docs.forEach((entry: FoodEntry) => {
+      totals.calories += entry.calories || 0;
+      totals.protein += entry.protein || 0;
+      totals.carbs += entry.carbs || 0;
+      totals.fat += entry.fat || 0;
     });
     
+    // Format pagination data
+    const pagination = {
+      totalDocs: foodEntries.totalDocs,
+      totalPages: foodEntries.totalPages,
+      page: foodEntries.page,
+      prevPage: foodEntries.prevPage,
+      nextPage: foodEntries.nextPage,
+      hasPrevPage: foodEntries.hasPrevPage,
+      hasNextPage: foodEntries.hasNextPage
+    };
+    
     return NextResponse.json({
-      overallTotals,
-      dailyData: groupedByDate
+      entries: foodEntries.docs,
+      entriesByDate,
+      pagination,
+      totals
     }, { status: 200 });
   } catch (error) {
     console.error('Error fetching historical food data:', error);
