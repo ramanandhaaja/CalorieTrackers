@@ -105,6 +105,8 @@ export default function Sidebar({ username, isOpen: propIsOpen, toggleSidebar }:
                   Meals
                 </Link>
               </li>
+
+              {/* 
               <li>
                 <Link 
                   href="/" 
@@ -121,6 +123,7 @@ export default function Sidebar({ username, isOpen: propIsOpen, toggleSidebar }:
                   Progress
                 </Link>
               </li>
+             */}
               <li>
                 <Link 
                   href="/dashboard/settings" 
