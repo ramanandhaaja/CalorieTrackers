@@ -26,9 +26,9 @@ export default async function DashboardPage() {
       
       {/* Main Content */}
       <div className="flex-1 min-w-0">
-        <div className="w-full px-4 py-6">
-          {/* Header with Toggle Button */}
-          <div className="mb-8 flex items-center justify-between">
+        <div className="container mx-auto py-6">
+          {/* Header with Toggle Button */} 
+          <div className="mb-6 flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-gray-900">
                 Hello, {username}
