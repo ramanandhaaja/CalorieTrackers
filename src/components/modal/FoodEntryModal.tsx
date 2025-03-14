@@ -32,7 +32,7 @@ const initialFoodData: FoodData = {
 };
 
 export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodData }: FoodEntryModalProps) {
-  const defaultFoodData = useMemo<FoodData>(() => ({
+  const defaultFoodData: FoodData = useMemo(() => ({
     name: '',
     portion: '',
     calories: 0,
@@ -50,6 +50,14 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
   const [isEditing, setIsEditing] = useState(false);
   const [isAnalyzingPhoto, setIsAnalyzingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [initialFoodDataState, setInitialFoodDataState] = useState<FoodData | null>(null);
+  const [baseNutrition, setBaseNutrition] = useState({
+    basePortion: '',
+    baseCalories: 0,
+    baseProtein: 0,
+    baseCarbs: 0,
+    baseFat: 0
+  });
 
   // Reset form when modal opens/closes or when initialFoodData changes
   useEffect(() => {
@@ -57,9 +65,29 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
       if (initialFoodData) {
         setFoodData(initialFoodData);
         setIsEditing(true);
+        // Store the initial data for reset functionality
+        setInitialFoodDataState({ ...initialFoodData });
+        // Store base nutrition values
+        setBaseNutrition({
+          basePortion: initialFoodData.portion,
+          baseCalories: initialFoodData.calories,
+          baseProtein: initialFoodData.protein,
+          baseCarbs: initialFoodData.carbs,
+          baseFat: initialFoodData.fat
+        });
       } else {
         setFoodData(defaultFoodData);
         setIsEditing(false);
+        // Store the default data for reset functionality
+        setInitialFoodDataState({ ...defaultFoodData });
+        // Reset base nutrition values
+        setBaseNutrition({
+          basePortion: '',
+          baseCalories: 0,
+          baseProtein: 0,
+          baseCarbs: 0,
+          baseFat: 0
+        });
       }
       setAiPrompt('');
       setActiveTab('manual');
@@ -245,6 +273,102 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
     }
   };
 
+  // Add function to extract unit from portion
+  const extractPortionUnit = (portion: string): string => {
+    // Try to extract unit like "cup", "g", "oz", etc.
+    const match = portion.match(/[a-zA-Z]+/);
+    return match ? match[0] : '';
+  };
+
+  // Add function to extract number from portion
+  const extractPortionNumber = (portion: string): number => {
+    // Try to extract number like 1, 0.5, etc.
+    const match = portion.match(/[\d.\/]+/);
+    if (!match) return 1;
+    
+    // Handle fractions like 1/2
+    if (match[0].includes('/')) {
+      const [numerator, denominator] = match[0].split('/');
+      return parseFloat(numerator) / parseFloat(denominator);
+    }
+    
+    return parseFloat(match[0]);
+  };
+
+  const handlePortionMultiplierChange = (multiplier: number) => {
+    // Extract the numeric part and unit from the current portion
+    const currentNumber = extractPortionNumber(foodData.portion);
+    const currentUnit = extractPortionUnit(foodData.portion);
+    
+    // Calculate new values
+    const newNumber = currentNumber * multiplier;
+    
+    // Format the new portion text
+    let newPortion;
+    if (currentUnit) {
+      newPortion = `${newNumber % 1 === 0 ? newNumber : newNumber.toFixed(1)} ${currentUnit}`;
+    } else {
+      newPortion = `${newNumber % 1 === 0 ? newNumber : newNumber.toFixed(1)}`;
+    }
+    
+    // Update all nutritional values proportionally
+    setFoodData(prev => ({
+      ...prev,
+      portion: newPortion,
+      calories: Math.round(prev.calories * multiplier),
+      protein: parseFloat((prev.protein * multiplier).toFixed(1)),
+      carbs: parseFloat((prev.carbs * multiplier).toFixed(1)),
+      fat: parseFloat((prev.fat * multiplier).toFixed(1))
+    }));
+  };
+
+  const handlePortionAdjustment = (adjustment: number) => {
+    // Extract the numeric part and unit from the current portion
+    const currentNumber = extractPortionNumber(foodData.portion);
+    const currentUnit = extractPortionUnit(foodData.portion);
+    
+    // Calculate new values - add or subtract the adjustment value
+    const newNumber = currentNumber + adjustment;
+    
+    // Ensure the number is never less than 0.25
+    const safeNewNumber = Math.max(0.25, newNumber);
+    
+    // Format the new portion text
+    let newPortion;
+    if (currentUnit) {
+      newPortion = `${safeNewNumber % 1 === 0 ? safeNewNumber : safeNewNumber.toFixed(1)} ${currentUnit}`;
+    } else {
+      newPortion = `${safeNewNumber % 1 === 0 ? safeNewNumber : safeNewNumber.toFixed(1)}`;
+    }
+    
+    // Calculate the multiplier for nutritional values
+    const multiplier = safeNewNumber / currentNumber;
+    
+    // Update all nutritional values proportionally
+    setFoodData(prev => ({
+      ...prev,
+      portion: newPortion,
+      calories: Math.round(prev.calories * multiplier),
+      protein: parseFloat((prev.protein * multiplier).toFixed(1)),
+      carbs: parseFloat((prev.carbs * multiplier).toFixed(1)),
+      fat: parseFloat((prev.fat * multiplier).toFixed(1))
+    }));
+  };
+
+  const resetPortion = () => {
+    // Reset to a portion multiplier of 1 (base values)
+    if (baseNutrition.basePortion) {
+      setFoodData(prev => ({
+        ...prev,
+        portion: baseNutrition.basePortion,
+        calories: baseNutrition.baseCalories,
+        protein: baseNutrition.baseProtein,
+        carbs: baseNutrition.baseCarbs,
+        fat: baseNutrition.baseFat
+      }));
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 overflow-hidden">
@@ -319,16 +443,52 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
                 <label htmlFor="portion" className="block text-sm font-medium text-gray-700 mb-1">
                   Portion Size
                 </label>
-                <input
-                  type="text"
-                  id="portion"
-                  name="portion"
-                  value={foodData.portion}
-                  onChange={handleChange}
-                  placeholder="e.g., 1 cup (250g)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500"
-                  required
-                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    id="portion"
+                    name="portion"
+                    value={foodData.portion}
+                    onChange={handleChange}
+                    placeholder="e.g., 1 cup (250g)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500"
+                    required
+                  />
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handlePortionMultiplierChange(0.5)}
+                      className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded border border-gray-300 transition-colors"
+                      aria-label="Half portion"
+                    >
+                      ½×
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePortionAdjustment(-0.5)}
+                      className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded border border-gray-300 transition-colors"
+                      aria-label="Decrease portion by 0.5"
+                    >
+                      -
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePortionAdjustment(0.5)}
+                      className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded border border-gray-300 transition-colors"
+                      aria-label="Increase portion by 0.5"
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePortionMultiplierChange(2)}
+                      className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded border border-gray-300 transition-colors"
+                      aria-label="Double portion"
+                    >
+                      2×
+                    </button>
+                  </div>
+                </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -550,15 +710,24 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
               <div className="flex flex-col items-center justify-center py-8">
                 <div className="text-center mb-6">
                   <div className="bg-green-100 p-4 rounded-full inline-block mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 text-green-600">
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="w-8 h-8 text-green-600"
+                    >
                       <path d="M12 8V4m0 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"></path>
                       <path d="M12 16v4"></path>
-                      <path d="M4 12H2"></path>
-                      <path d="M10 2l-2 2"></path>
-                      <path d="M14 2l2 2"></path>
-                      <path d="M20 12h2"></path>
-                      <path d="M10 22l-2-2"></path>
-                      <path d="M14 22l2-2"></path>
+                      <path d="M4.22 4.22l1.42 1.42"></path>
+                      <path d="M18.36 18.36l1.42 1.42"></path>
+                      <path d="M1 12h2"></path>
+                      <path d="M21 12h2"></path>
+                      <path d="M4.22 19.78l1.42-1.42"></path>
+                      <path d="M18.36 5.64l1.42-1.42"></path>
                     </svg>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Let AI analyze your meal</h3>

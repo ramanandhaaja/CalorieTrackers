@@ -141,23 +141,24 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
     
     return (
       <div key={entry.id} className="mb-3 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
-        <div className="flex items-center justify-between p-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-2">
           {/* Left side with meal icon and food name */}
           <div className="flex items-center">
-            <div className={`w-10 h-10 ${colors.bg} rounded-full flex items-center justify-center shadow-sm`}>
+            <div className={`w-10 h-10 ${colors.bg} rounded-full flex items-center justify-center shadow-sm flex-shrink-0`}>
               <span className={`text-base ${colors.text}`}>{MEAL_TYPE_EMOJIS[mealType]}</span>
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-800">{entry.name}</p>
+            <div className="ml-3 min-w-0">
+              <p className="text-sm font-medium text-gray-800 truncate max-w-[150px] sm:max-w-[200px]">{entry.name}</p>
               <p className="text-xs text-gray-500">{entry.portion}</p>
             </div>
           </div>
           
-          {/* Right side with nutrition info */}
-          <div className="flex items-center">
-            <div className="text-right mr-4">
+          {/* Right side with nutrition info and actions */}
+          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto mt-2 sm:mt-0">
+            {/* Nutrition info */}
+            <div className="text-left sm:text-right sm:mr-4">
               <p className="text-sm font-semibold text-gray-800">{entry.calories} cal</p>
-              <div className="flex text-xs text-gray-500 space-x-2 mt-0.5">
+              <div className="flex flex-wrap text-xs text-gray-500 gap-1 mt-0.5">
                 <span className="px-1.5 py-0.5 bg-green-50 rounded-full">P: {entry.protein}g</span>
                 <span className="px-1.5 py-0.5 bg-purple-50 rounded-full">C: {entry.carbs}g</span>
                 <span className="px-1.5 py-0.5 bg-yellow-50 rounded-full">F: {entry.fat}g</span>
@@ -165,7 +166,7 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
             </div>
             
             {/* Action buttons */}
-            <div className="flex space-x-1">
+            <div className="flex space-x-1 flex-shrink-0">
               <button 
                 onClick={() => handleEditFood(entry)}
                 className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
