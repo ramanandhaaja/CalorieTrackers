@@ -28,14 +28,27 @@ export async function middleware(request: NextRequest) {
       }
     } catch (error) {
       console.error('Error checking onboarding status:', error);
-      // If there's an error, let them proceed to dashboard
+      // If there's an error checking onboarding status, allow access to dashboard
+      // This prevents unwanted redirects to onboarding due to API errors
+      return NextResponse.next();
     }
   }
 
-  // Important: Do not redirect back to onboarding if user is already there
-  // This prevents redirect loops when completing onboarding
-  if (pathname === '/onboarding') {
-    return NextResponse.next();
+  // If user is authenticated and trying to access onboarding, check if they've already completed it
+  if (token && pathname === '/onboarding') {
+    try {
+      const hasCompletedOnboarding = await checkOnboardingStatus(token, request);
+      
+      if (hasCompletedOnboarding) {
+        // If user has already completed onboarding, redirect them to dashboard
+        console.log('User has already completed onboarding, redirecting to dashboard');
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    } catch (error) {
+      console.error('Error checking onboarding status for onboarding page:', error);
+      // If there's an error, let them stay on the onboarding page
+      // This is safer than potentially causing a redirect loop
+    }
   }
 
   return NextResponse.next();
@@ -57,7 +70,8 @@ async function checkOnboardingStatus(token: string, request: NextRequest): Promi
         headers: {
           Cookie: `payload-token=${token}`
         },
-        cache: 'no-store'
+        cache: 'no-store',
+        next: { revalidate: 0 } // Ensure we're not using cached data
       }
     );
     
@@ -65,17 +79,23 @@ async function checkOnboardingStatus(token: string, request: NextRequest): Promi
       // If the response is not OK (e.g., 401 unauthorized), the user is not authenticated
       // or there was another error
       console.error('Failed to fetch user details, status:', userDetailsResponse.status);
-      return false;
+      
+      // Only return false for 404 (not found) or 403 (forbidden)
+      // For other errors (like 500 server errors), throw an error to be caught by the caller
+      if (userDetailsResponse.status === 404 || userDetailsResponse.status === 403) {
+        return false;
+      }
+      
+      throw new Error(`API returned ${userDetailsResponse.status}`);
     }
     
     const userDetailsData = await userDetailsResponse.json();
-    console.log('User details data:', userDetailsData);
     
     // If there are any docs in the response, the user has completed onboarding
     return userDetailsData?.docs && userDetailsData.docs.length > 0;
   } catch (error) {
     console.error('Error in checkOnboardingStatus:', error);
-    return false;
+    throw error; // Re-throw to let the caller decide how to handle it
   }
 }
 

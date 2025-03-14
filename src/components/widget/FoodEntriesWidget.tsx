@@ -140,46 +140,53 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
     const isDeleting = deletingFoodId === String(entry.id);
     
     return (
-      <div key={entry.id} className="flex justify-between py-2 border-b border-gray-50">
-        <div className="flex items-center">
-          <div className={`w-7 h-7 ${colors.bg} rounded-full flex items-center justify-center`}>
-            <span className={`text-sm ${colors.text}`}>{MEAL_TYPE_EMOJIS[mealType]}</span>
-          </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium">{entry.name}</p>
-            <p className="text-sm text-gray-500">{entry.portion}</p>
-          </div>
-        </div>
-        <div className="flex items-center">
-          <div className="text-right mr-3">
-            <p className="text-sm font-medium">{entry.calories} cal</p>
-            <div className="flex text-sm text-gray-500 space-x-2">
-              <span>P: {entry.protein}g</span>
-              <span>C: {entry.carbs}g</span>
-              <span>F: {entry.fat}g</span>
+      <div key={entry.id} className="mb-3 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
+        <div className="flex items-center justify-between p-3">
+          {/* Left side with meal icon and food name */}
+          <div className="flex items-center">
+            <div className={`w-10 h-10 ${colors.bg} rounded-full flex items-center justify-center shadow-sm`}>
+              <span className={`text-base ${colors.text}`}>{MEAL_TYPE_EMOJIS[mealType]}</span>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-800">{entry.name}</p>
+              <p className="text-xs text-gray-500">{entry.portion}</p>
             </div>
           </div>
-          <div className="flex flex-col space-y-1">
-            <button 
-              onClick={() => handleEditFood(entry)}
-              className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
-              aria-label="Edit food entry"
-              disabled={isDeleting}
-            >
-              <Pencil size={14} />
-            </button>
-            <button 
-              onClick={() => handleDeleteFood(String(entry.id))}
-              className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-              aria-label="Delete food entry"
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <div className="w-3.5 h-3.5 border-2 border-t-transparent border-red-500 rounded-full animate-spin" />
-              ) : (
-                <Trash2 size={14} />
-              )}
-            </button>
+          
+          {/* Right side with nutrition info */}
+          <div className="flex items-center">
+            <div className="text-right mr-4">
+              <p className="text-sm font-semibold text-gray-800">{entry.calories} cal</p>
+              <div className="flex text-xs text-gray-500 space-x-2 mt-0.5">
+                <span className="px-1.5 py-0.5 bg-green-50 rounded-full">P: {entry.protein}g</span>
+                <span className="px-1.5 py-0.5 bg-purple-50 rounded-full">C: {entry.carbs}g</span>
+                <span className="px-1.5 py-0.5 bg-yellow-50 rounded-full">F: {entry.fat}g</span>
+              </div>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="flex space-x-1">
+              <button 
+                onClick={() => handleEditFood(entry)}
+                className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
+                aria-label="Edit food entry"
+                disabled={isDeleting}
+              >
+                <Pencil size={14} />
+              </button>
+              <button 
+                onClick={() => handleDeleteFood(String(entry.id))}
+                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                aria-label="Delete food entry"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <div className="w-3.5 h-3.5 border-2 border-t-transparent border-red-500 rounded-full animate-spin" />
+                ) : (
+                  <Trash2 size={14} />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -230,12 +237,14 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
       
       <div className="px-5 py-1">
         {isLoading ? (
-          <div className="flex justify-center items-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <div className="p-5">
+            <div className="flex justify-center mt-4">
+              <div className="w-8 h-8 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+            </div>
           </div>
         ) : error ? (
-          <div className="text-red-500 text-center py-5 text-base">
-            Error loading food data. Please try again.
+          <div className="p-5">
+            <p className="text-red-500 text-base">Error loading food data: {error}</p>
           </div>
         ) : (
           <>

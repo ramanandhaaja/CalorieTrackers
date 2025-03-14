@@ -350,15 +350,6 @@ export default function SettingsPage() {
     toast.success('Metabolic rates and nutrition goals calculated!');
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex h-[80vh] w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-lg">Loading your profile...</span>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6 flex items-center justify-between">
@@ -371,6 +362,16 @@ export default function SettingsPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{errorState}</AlertDescription>
+        </Alert>
+      )}
+      
+      {swrError && (
+        <Alert className="mb-6" variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error Loading Data</AlertTitle>
+          <AlertDescription>
+            {swrError instanceof Error ? swrError.message : 'Failed to load your profile data. Your changes will still be saved.'}
+          </AlertDescription>
         </Alert>
       )}
       

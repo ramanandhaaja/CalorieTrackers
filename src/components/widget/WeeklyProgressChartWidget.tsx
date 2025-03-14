@@ -237,7 +237,7 @@ const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({
         <div className="h-60 relative">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
-              <div className="animate-pulse text-blue-500 text-base">Loading data...</div>
+              <div className="w-8 h-8 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
             </div>
           )}
           <Chart

@@ -181,14 +181,6 @@ export default function MealsPage() {
     }
   };
 
-  if (loading && !foodEntries.length) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -196,26 +188,40 @@ export default function MealsPage() {
           <h1 className="text-3xl font-bold">Meal History</h1>
           <SidebarToggleButton />
         </div>
-        
-        <div className="flex items-center gap-2">
-         
-          
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="px-3 py-1">
-              <span className="font-semibold">{totals.calories}</span> calories
-            </Badge>
-            <Badge variant="outline" className="px-3 py-1">
-              <span className="font-semibold">{totals.protein}g</span> protein
-            </Badge>
-            <Badge variant="outline" className="px-3 py-1">
-              <span className="font-semibold">{totals.carbs}g</span> carbs
-            </Badge>
-            <Badge variant="outline" className="px-3 py-1">
-              <span className="font-semibold">{totals.fat}g</span> fat
-            </Badge>
-          </div>
-        </div>
       </div>
+
+      {/* Nutrition Summary Card */}
+      <Card className="mb-6">
+        <CardContent className="py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <div className="flex items-center mb-3 sm:mb-0">
+              <div className="mr-3 p-2 rounded-full bg-green-100">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Total Nutrition</p>
+                <p className="text-lg font-semibold">{totals.calories} calories</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center px-4 py-2 bg-blue-50 rounded-lg">
+                <p className="text-xs text-gray-500">Protein</p>
+                <p className="text-lg font-semibold text-blue-600">{totals.protein}g</p>
+              </div>
+              <div className="text-center px-4 py-2 bg-green-50 rounded-lg">
+                <p className="text-xs text-gray-500">Carbs</p>
+                <p className="text-lg font-semibold text-green-600">{totals.carbs}g</p>
+              </div>
+              <div className="text-center px-4 py-2 bg-yellow-50 rounded-lg">
+                <p className="text-xs text-gray-500">Fat</p>
+                <p className="text-lg font-semibold text-yellow-600">{totals.fat}g</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       
       {/* Filters */}
       <Card>
@@ -277,7 +283,16 @@ export default function MealsPage() {
       </Tabs>
       
       {/* Meal List */}
-      {Object.keys(entriesByDate).length === 0 ? (
+      {loading ? (
+        <Card>
+          <CardContent className="flex justify-center items-center py-16">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-8 h-8 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+              <p className="text-sm text-muted-foreground">Loading your meal history...</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : Object.keys(entriesByDate).length === 0 ? (
         <Card>
           <CardContent className="pt-6">
             <p className="text-center text-muted-foreground py-8">No meal records found with the current filters. Try adjusting your search criteria.</p>

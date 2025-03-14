@@ -290,15 +290,25 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
                     variant="outline"
                     className="whitespace-nowrap flex items-center space-x-1 h-[42px] px-3 text-sm border border-gray-300 hover:bg-green-50 hover:text-green-600 hover:border-green-500"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 mr-1">
-                      <path d="M12 8V4m0 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"></path>
-                      <path d="M12 16v4"></path>
-                      <path d="M4 12H2"></path>
-                      <path d="M10 2l-2 2"></path>
-                      <path d="M14 2l2 2"></path>
-                      <path d="M20 12h2"></path>
-                      <path d="M10 22l-2-2"></path>
-                      <path d="M14 22l2-2"></path>
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="1.75" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="w-4 h-4 mr-1.5"
+                    >
+                      <circle cx="12" cy="12" r="5"></circle>
+                      <path d="M12 1v2"></path>
+                      <path d="M12 21v2"></path>
+                      <path d="M4.22 4.22l1.42 1.42"></path>
+                      <path d="M18.36 18.36l1.42 1.42"></path>
+                      <path d="M1 12h2"></path>
+                      <path d="M21 12h2"></path>
+                      <path d="M4.22 19.78l1.42-1.42"></path>
+                      <path d="M18.36 5.64l1.42-1.42"></path>
                     </svg>
                     Ask AI
                   </Button>
@@ -330,9 +340,10 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
                     type="number"
                     id="calories"
                     name="calories"
-                    value={foodData.calories || ''}
+                    value={foodData.calories}
                     onChange={handleChange}
                     min="0"
+                    step="0.1"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500"
                     required
                   />
@@ -367,9 +378,10 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
                     type="number"
                     id="protein"
                     name="protein"
-                    value={foodData.protein || ''}
+                    value={foodData.protein}
                     onChange={handleChange}
                     min="0"
+                    step="0.1"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500"
                     required
                   />
@@ -383,9 +395,10 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
                     type="number"
                     id="carbs"
                     name="carbs"
-                    value={foodData.carbs || ''}
+                    value={foodData.carbs}
                     onChange={handleChange}
                     min="0"
+                    step="0.1"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500"
                     required
                   />
@@ -399,9 +412,10 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
                     type="number"
                     id="fat"
                     name="fat"
-                    value={foodData.fat || ''}
+                    value={foodData.fat}
                     onChange={handleChange}
                     min="0"
+                    step="0.1"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500"
                     required
                   />
@@ -444,51 +458,73 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
             {showAiForm ? (
               <form onSubmit={handleAiSubmit} className="space-y-4">
                 <div>
-                  <div className="flex justify-between items-center mb-1">
+                  <div className="flex justify-between items-center mb-2">
                     <label htmlFor="aiPrompt" className="block text-sm font-medium text-gray-700">
                       Describe your meal
                     </label>
-                    <button
-                      type="button"
-                      onClick={handleTakePhotoClick}
-                      className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-4 font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                      disabled={isAnalyzingPhoto}
-                    >
-                      {isAnalyzingPhoto ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          Take Photo
-                        </>
-                      )}
-                    </button>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      accept="image/*"
-                      capture="environment"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
+                    <div className="text-xs text-gray-500 italic">Choose one method below</div>
                   </div>
-                  <textarea
-                    id="aiPrompt"
-                    value={aiPrompt}
-                    onChange={handleAiPromptChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 min-h-[120px]"
-                    placeholder="Describe what you ate in detail. For example: 'I had a grilled chicken sandwich with lettuce, tomato, and mayo on whole wheat bread with a side of french fries and a diet coke.'"
-                    required
-                  />
+                  
+                  <div className="flex gap-3 mb-2">
+                    <div className="flex-grow">
+                      <div className="text-xs text-gray-600 mb-1.5 flex items-center">
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-700 mr-1.5 text-[10px] font-bold">1</span>
+                        Enter meal description
+                      </div>
+                      <textarea
+                        id="aiPrompt"
+                        value={aiPrompt}
+                        onChange={handleAiPromptChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 min-h-[120px] text-sm"
+                        placeholder="Describe your meal in detail (e.g., 'Grilled chicken sandwich with lettuce, tomato, mayo on whole wheat, side of fries, diet coke')"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col justify-start">
+                      <div className="text-xs text-gray-600 mb-1.5 flex items-center">
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-700 mr-1.5 text-[10px] font-bold">2</span>
+                        Or take a photo
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleTakePhotoClick}
+                        className={`flex flex-col items-center justify-center p-3 rounded-lg border ${isAnalyzingPhoto ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-green-300'} transition-colors w-24 h-[120px] shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
+                        disabled={isAnalyzingPhoto}
+                      >
+                        {isAnalyzingPhoto ? (
+                          <>
+                            <div className="w-10 h-10 mb-2 rounded-full bg-white flex items-center justify-center">
+                              <svg className="animate-spin h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            </div>
+                            <span className="text-xs font-medium text-green-700">Analyzing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-10 h-10 mb-2 rounded-full bg-green-100 flex items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                            </div>
+                            <span className="text-xs font-medium text-gray-700">Take Photo</span>
+                            <span className="text-[10px] text-gray-500 mt-1">Quick Analysis</span>
+                          </>
+                        )}
+                      </button>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                      />
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="bg-green-50 p-3 rounded-md">
@@ -537,13 +573,6 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
             )}
           </TabsContent>
         </Tabs>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handlePhotoUpload}
-          accept="image/*"
-          className="hidden"
-        />
       </div>
     </div>
   );

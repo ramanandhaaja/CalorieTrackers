@@ -105,13 +105,11 @@ export default function WaterIntakeWidget() {
       
       <div className="p-5">
         {isLoading ? (
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <div className="flex justify-center mt-4">
+            <div className="w-8 h-8 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
           </div>
         ) : error ? (
-          <div className="text-red-500 text-center text-base">
-            Error loading water data. Please try again.
-          </div>
+          <p className="text-red-500 text-base">Error loading water data: {error}</p>
         ) : (
           <>
             <div className="flex justify-center mb-5">
