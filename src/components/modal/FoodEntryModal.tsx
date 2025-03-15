@@ -19,6 +19,7 @@ export type FoodData = {
   fat: number;
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   id?: string;
+  date?: string;
 };
 
 const initialFoodData: FoodData = {
@@ -238,12 +239,19 @@ export default function FoodEntryModal({ isOpen, onClose, onSubmit, initialFoodD
       const url = '/api/food';
       const method = isEditing ? 'PUT' : 'POST';
       
+      // Create a copy of the food data and explicitly set the date to now in local timezone
+      const foodDataWithDate = {
+        ...foodData,
+        // Only set date for new entries, not when editing
+        ...(isEditing ? {} : { date: new Date().toISOString() })
+      };
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(foodData),
+        body: JSON.stringify(foodDataWithDate),
       });
       
       if (!response.ok) {

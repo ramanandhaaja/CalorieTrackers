@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { 
   Sheet, 
@@ -15,6 +15,13 @@ import { X } from 'lucide-react'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    // Check if the payload-token cookie exists
+    const hasToken = document.cookie.includes('payload-token=')
+    setIsLoggedIn(hasToken)
+  }, [])
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 py-6 px-8 md:px-16 lg:px-24 bg-gray-400/40 backdrop-blur-sm">
@@ -46,14 +53,22 @@ const Header = () => {
               </Link>
             </nav>
 
-            {/* Login/Register Buttons */}
+            {/* Login/Register Buttons or Dashboard Button */}
             <div className="flex items-center space-x-4 ml-4">
-              <Link href="/login" className="text-white hover:text-gray-200 transition-colors">
-                Login
-              </Link>
-              <Button asChild className="bg-green-600 text-white hover:bg-green-700">
-                <Link href="/register">Register</Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button asChild className="bg-green-600 text-white hover:bg-green-700">
+                  <Link href="/dashboard">Go to Dashboard</Link>
+                </Button>
+              ) : (
+                <>
+                  <Link href="/login" className="text-white hover:text-gray-200 transition-colors">
+                    Login
+                  </Link>
+                  <Button asChild className="bg-green-600 text-white hover:bg-green-700">
+                    <Link href="/register">Register</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 
@@ -128,25 +143,37 @@ const Header = () => {
                     </Link>
                   </nav>
                   
-                  {/* Login/Register Buttons */}
+                  {/* Login/Register Buttons or Dashboard Button */}
                   <div className="flex flex-col space-y-4 mt-6 pt-6 border-t border-gray-100">
                     <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">
                       Account
                     </h3>
-                    <Link 
-                      href="/login" 
-                      className="text-gray-800 hover:text-green-600 transition-colors text-lg font-medium"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Login
-                    </Link>
-                    <Button 
-                      asChild 
-                      className="bg-green-600 text-white hover:bg-green-700 w-full mt-2"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <Link href="/register">Register</Link>
-                    </Button>
+                    {isLoggedIn ? (
+                      <Button 
+                        asChild 
+                        className="bg-green-600 text-white hover:bg-green-700 w-full"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Link href="/dashboard">Go to Dashboard</Link>
+                      </Button>
+                    ) : (
+                      <>
+                        <Link 
+                          href="/login" 
+                          className="text-gray-800 hover:text-green-600 transition-colors text-lg font-medium"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Login
+                        </Link>
+                        <Button 
+                          asChild 
+                          className="bg-green-600 text-white hover:bg-green-700 w-full mt-2"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <Link href="/register">Register</Link>
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

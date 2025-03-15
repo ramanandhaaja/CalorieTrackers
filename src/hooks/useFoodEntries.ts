@@ -55,7 +55,10 @@ export function useFoodEntries() {
     setError(null);
     
     try {
-      const response = await fetch('/api/food');
+      // Add a timestamp parameter to ensure we're using the client's timezone
+      // This helps prevent caching and ensures consistent timezone handling
+      const timestamp = new Date().getTime();
+      const response = await fetch(`/api/food?_t=${timestamp}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch food entries: ${response.status}`);

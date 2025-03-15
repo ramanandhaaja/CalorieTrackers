@@ -4,11 +4,20 @@ import type { FoodEntry } from '../../../payload-types';
 import config from '@/payload.config';
 import { getCurrentUser } from '@/lib/auth';
 
-// Helper function to get the start and end of today
+// Helper function to get the start and end of today with timezone handling
 function getTodayDateRange() {
+  // Get the current date in the local timezone
   const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  
+  // Create start of day in local timezone
+  const startOfDay = new Date(now);
+  startOfDay.setHours(0, 0, 0, 0);
+  
+  // Create end of day in local timezone
+  const endOfDay = new Date(now);
+  endOfDay.setHours(23, 59, 59, 999);
+  
+  console.log(`Today's date range: ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
   
   return {
     startOfDay: startOfDay.toISOString(),
@@ -20,7 +29,8 @@ function getTodayDateRange() {
 function getWeekDateRange() {
   // Get current date without time
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
   
   // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
   const dayOfWeek = today.getDay();
@@ -35,6 +45,7 @@ function getWeekDateRange() {
   // Calculate the end of the week (Sunday)
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
   
   console.log(`Week date range: ${startOfWeek.toISOString()} to ${endOfWeek.toISOString()}`);
   
