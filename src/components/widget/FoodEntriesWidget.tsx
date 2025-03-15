@@ -139,6 +139,24 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
     const colors = MEAL_TYPE_COLORS[mealType];
     const isDeleting = deletingFoodId === String(entry.id);
     
+    // Format the date with proper timezone handling
+    const formatEntryDate = (dateString: string) => {
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true
+        });
+      } catch (error) {
+        console.error('Error formatting date:', error);
+        return dateString;
+      }
+    };
+    
     return (
       <div key={entry.id} className="mb-3 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-2">
@@ -150,6 +168,9 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
             <div className="ml-3 min-w-0">
               <p className="text-sm font-medium text-gray-800 truncate max-w-[150px] sm:max-w-[200px]">{entry.name}</p>
               <p className="text-xs text-gray-500">{entry.portion}</p>
+              {entry.date && (
+                <p className="text-xs text-gray-400 mt-0.5">{formatEntryDate(entry.date)}</p>
+              )}
             </div>
           </div>
           

@@ -105,7 +105,6 @@ export default function MealsPage() {
       const data: ApiResponse = await response.json();
       
       setFoodEntries(data.entries);
-      setEntriesByDate(data.entriesByDate);
       setPagination(data.pagination);
       setTotals(data.totals);
     } catch (error) {
@@ -114,6 +113,41 @@ export default function MealsPage() {
       setLoading(false);
     }
   }, [page, limit, startDate, endDate, mealType]);
+
+  // Process the API response to group entries by date (without time)
+  useEffect(() => {
+    if (foodEntries.length > 0) {
+      // Group entries by date (YYYY-MM-DD)
+      const groupedByDate: Record<string, FoodEntry[]> = {};
+      
+      foodEntries.forEach(entry => {
+        try {
+          // Get the date string directly from the entry date
+          const dateObj = new Date(entry.date);
+          
+          // Format date as YYYY-MM-DD using the date parts
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObj.getDate()).padStart(2, '0');
+          
+          // Create a date key that represents just the date (no time)
+          const dateKey = `${year}-${month}-${day}`;
+          
+          // Initialize date group if it doesn't exist
+          if (!groupedByDate[dateKey]) {
+            groupedByDate[dateKey] = [];
+          }
+          
+          // Add entry to the date group
+          groupedByDate[dateKey].push(entry);
+        } catch (error) {
+          console.error(`Error processing date for entry ${entry.name}:`, error);
+        }
+      });
+      
+      setEntriesByDate(groupedByDate);
+    }
+  }, [foodEntries]);
 
   // Fetch meals when filters change
   useEffect(() => {
@@ -159,12 +193,44 @@ export default function MealsPage() {
   // Format date for display
   const formatDate = (dateString: string) => {
     try {
-      return format(parseISO(dateString.split('T')[0]), 'EEEE, MMMM d, yyyy');
+      // Create a Date object from the ISO string to properly handle timezone
+      const date = new Date(dateString);
+      
+      // Format the date with the user's local timezone
+      return date.toLocaleString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      });
     } catch (error) {
+      console.error('Error formatting date:', error);
       return dateString;
     }
   };
-  
+
+  // Format date for display - date only without time
+  const formatDateOnly = (dateString: string) => {
+    try {
+      // Create a Date object from the ISO string to properly handle timezone
+      const date = new Date(dateString);
+      
+      // Format the date with the user's local timezone (date only)
+      return date.toLocaleString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString;
+    }
+  };
+
   // Get meal type badge color
   const getMealTypeBadgeColor = (type: string) => {
     switch (type) {
@@ -308,7 +374,7 @@ export default function MealsPage() {
                   <div className="flex justify-between items-center">
                     <CardTitle className="flex items-center gap-2">
                       <Calendar className="h-5 w-5" />
-                      {formatDate(date)}
+                      {formatDateOnly(date)}
                     </CardTitle>
                     <Badge variant="outline" className="ml-2">
                       {entries.reduce((total, entry) => total + entry.calories, 0)} calories
@@ -328,7 +394,7 @@ export default function MealsPage() {
                               </Badge>
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              <span>{format(parseISO(entry.date), 'h:mm a')}</span>
+                              <span>{formatDate(entry.date)}</span>
                               <div>{entry.portion}</div>
                             </div>
                           </div>
@@ -336,19 +402,19 @@ export default function MealsPage() {
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div>
                               <p className="text-muted-foreground">Calories</p>
-                              <p className="font-medium text-lg">{entry.calories}</p>
+                              <p className="font-medium">{entry.calories}</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">Protein</p>
-                              <p className="font-medium text-lg">{entry.protein}g</p>
+                              <p className="font-medium">{entry.protein}g</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">Carbs</p>
-                              <p className="font-medium text-lg">{entry.carbs}g</p>
+                              <p className="font-medium">{entry.carbs}g</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">Fat</p>
-                              <p className="font-medium text-lg">{entry.fat}g</p>
+                              <p className="font-medium">{entry.fat}g</p>
                             </div>
                           </div>
                         </div>

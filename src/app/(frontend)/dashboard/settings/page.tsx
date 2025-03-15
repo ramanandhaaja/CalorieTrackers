@@ -534,32 +534,15 @@ export default function SettingsPage() {
           {/* Nutrition Goals Tab */}
           <TabsContent value="goals">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader>
                 <div>
                   <CardTitle>Nutrition Goals</CardTitle>
                   <CardDescription>
                     Set your daily nutrition targets for tracking progress.
                   </CardDescription>
                 </div>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={calculateMetabolicRates}
-                >
-                  Calculate BMR & Goals
-                </Button>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Alert about Health & Fitness connection */}
-                <Alert className="bg-blue-50 text-blue-800 border-blue-200">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Health & Fitness Connection</AlertTitle>
-                  <AlertDescription>
-                    Your BMR, TDEE, and nutrition goals are calculated based on your age, gender, height, weight, activity level, and goal from the Health & Fitness tab.
-                  </AlertDescription>
-                </Alert>
-                
                 {/* Activity Level and Goal in a horizontal layout */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Activity Level */}
@@ -604,6 +587,15 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 
+                {/* Alert about Health & Fitness connection */}
+                <Alert className="bg-blue-50 text-blue-800 border-blue-200">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Health & Fitness Connection</AlertTitle>
+                  <AlertDescription>
+                    Your BMR, TDEE, and nutrition goals are calculated based on your age, gender, height, weight, activity level, and goal from the Health & Fitness tab.
+                  </AlertDescription>
+                </Alert>
+                
                 {/* Metabolic Information */}
                 <div className="bg-gray-50 p-4 rounded-lg mb-6">
                   <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
@@ -643,6 +635,18 @@ export default function SettingsPage() {
                       </div>
                       <p className="text-xs text-gray-500">Total calories burned per day including activity. Calculated as BMR × activity multiplier (1.2-1.9).</p>
                     </div>
+                  </div>
+                  
+                  <div className="flex justify-start mt-4">
+                    <Button 
+                      type="button" 
+                      variant="default" 
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={calculateMetabolicRates}
+                    >
+                      Calculate BMR & Goals
+                    </Button>
                   </div>
                   
                   <div className="mt-4 p-3 bg-blue-50 rounded-md text-xs text-blue-700">

@@ -4,20 +4,18 @@ import type { FoodEntry } from '../../../payload-types';
 import config from '@/payload.config';
 import { getCurrentUser } from '@/lib/auth';
 
-// Helper function to get the start and end of today with timezone handling
-function getTodayDateRange() {
-  // Get the current date in the local timezone
+// Helper function to get today's date range in the user's timezone
+export function getTodayDateRange() {
+  // Use the current date in the user's timezone
   const now = new Date();
   
-  // Create start of day in local timezone
+  // Create start of day in user's timezone
   const startOfDay = new Date(now);
   startOfDay.setHours(0, 0, 0, 0);
   
-  // Create end of day in local timezone
+  // Create end of day in user's timezone
   const endOfDay = new Date(now);
   endOfDay.setHours(23, 59, 59, 999);
-  
-  console.log(`Today's date range: ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
   
   return {
     startOfDay: startOfDay.toISOString(),
@@ -25,29 +23,22 @@ function getTodayDateRange() {
   };
 }
 
-// Helper function to get the start and end of the current week (Monday to Sunday)
-function getWeekDateRange() {
-  // Get current date without time
+// Helper function to get this week's date range
+export function getWeekDateRange() {
   const now = new Date();
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
   
   // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
-  const dayOfWeek = today.getDay();
+  const dayOfWeek = now.getDay();
   
-  // Calculate the start of the week (Monday)
-  const startOfWeek = new Date(today);
-  // If today is Sunday (0), go back 6 days to get to Monday
-  // Otherwise, go back (dayOfWeek - 1) days
-  const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  startOfWeek.setDate(today.getDate() - daysToSubtract);
+  // Calculate the start of the week (Sunday)
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - dayOfWeek);
+  startOfWeek.setHours(0, 0, 0, 0);
   
-  // Calculate the end of the week (Sunday)
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  // Calculate the end of the week (Saturday)
+  const endOfWeek = new Date(now);
+  endOfWeek.setDate(now.getDate() + (6 - dayOfWeek));
   endOfWeek.setHours(23, 59, 59, 999);
-  
-  console.log(`Week date range: ${startOfWeek.toISOString()} to ${endOfWeek.toISOString()}`);
   
   return {
     startOfWeek: startOfWeek.toISOString(),
@@ -82,6 +73,13 @@ export async function POST(req: NextRequest) {
       );
     }
     
+    // Log the received date for debugging
+    console.log('Received date from client:', body.date);
+    
+    // Use the provided date or create a new date in the user's timezone
+    const entryDate = body.date || new Date().toISOString();
+    console.log('Using date for food entry:', entryDate);
+    
     // Create the food entry
     const foodEntry = await payload.create({
       collection: 'food-entries', // This matches the slug in Food.ts
@@ -93,7 +91,7 @@ export async function POST(req: NextRequest) {
         carbs: Number(body.carbs),
         fat: Number(body.fat),
         mealType: body.mealType,
-        date: body.date || new Date().toISOString(),
+        date: entryDate,
         user: user.id, // Use the authenticated user's ID
         // The totalMacros will be calculated by the collection hooks
       },
@@ -203,26 +201,10 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-// GET handler to fetch food entries for today
+// GET handler to fetch food entries
 export async function GET(req: NextRequest) {
-  // Check if we're requesting weekly data or historical data
-  const { searchParams } = new URL(req.url);
-  const period = searchParams.get('period');
-  
-  if (period === 'week') {
-    return getWeeklyData(req);
-  } else if (period === 'historical') {
-    return getHistoricalData(req);
-  }
-  
-  // Default to daily data
   try {
     const payload = await getPayload({ config: await config });
-    
-    // Get date range for today
-    const { startOfDay, endOfDay } = getTodayDateRange();
-    
-    // Get the current authenticated user
     const user = await getCurrentUser();
     
     // If no user is authenticated, return an error
@@ -233,30 +215,65 @@ export async function GET(req: NextRequest) {
       );
     }
     
-    // Query food entries for today grouped by meal type
+    const url = new URL(req.url);
+    const timeframe = url.searchParams.get('timeframe') || 'today';
+    const period = url.searchParams.get('period');
+    
+    // If period is 'historical', use the historical data handler
+    if (period === 'historical') {
+      return getHistoricalData(req);
+    }
+    
+    // If period is 'week', use the weekly data handler
+    if (period === 'week') {
+      return getWeeklyData(req);
+    }
+    
+    let dateQuery: any = {};
+    
+    if (timeframe === 'today') {
+      const { startOfDay, endOfDay } = getTodayDateRange();
+      console.log('Fetching food entries for today:', { startOfDay, endOfDay });
+      dateQuery = {
+        date: {
+          greater_than_equal: startOfDay,
+          less_than_equal: endOfDay
+        }
+      };
+    } else if (timeframe === 'week') {
+      const { startOfWeek, endOfWeek } = getWeekDateRange();
+      console.log('Fetching food entries for week:', { startOfWeek, endOfWeek });
+      dateQuery = {
+        date: {
+          greater_than_equal: startOfWeek,
+          less_than_equal: endOfWeek
+        }
+      };
+    }
+    
+    // Fetch food entries for the user
     const foodEntries = await payload.find({
       collection: 'food-entries',
       where: {
-        and: [
-          {
-            user: {
-              equals: user.id
-            }
-          },
-          {
-            date: {
-              greater_than_equal: startOfDay,
-              less_than_equal: endOfDay
-            }
-          }
-        ]
+        user: {
+          equals: user.id
+        },
+        ...dateQuery
       },
-      sort: 'date',
-      depth: 0, // Don't populate references
+      sort: '-date', // Sort by date in descending order
     });
     
-    // Group by meal type
-    const mealGroups: Record<string, FoodEntry[]> = {
+    // Process the food entries to calculate totals and group by meal type
+    const entries = foodEntries.docs;
+    
+    // Calculate total calories and macros
+    let totalCalories = 0;
+    let totalProtein = 0;
+    let totalCarbs = 0;
+    let totalFat = 0;
+    
+    // Group entries by meal type
+    const mealGroups: { [key: string]: any[] } = {
       breakfast: [],
       lunch: [],
       dinner: [],
@@ -264,47 +281,45 @@ export async function GET(req: NextRequest) {
     };
     
     // Calculate meal totals
-    const mealTotals = {
+    const mealTotals: { [key: string]: number } = {
       breakfast: 0,
       lunch: 0,
       dinner: 0,
       snack: 0
     };
     
-    // Calculate total macros for the day
-    const totalMacros = {
-      calories: 0,
-      protein: 0,
-      carbs: 0,
-      fat: 0
-    };
-    
-    // Process each food entry
-    foodEntries.docs.forEach((entry: FoodEntry) => {
-      // Add to the appropriate meal type group
-      if (mealGroups[entry.mealType]) {
+    // Process each entry
+    entries.forEach(entry => {
+      // Add to total calories and macros
+      totalCalories += entry.calories || 0;
+      totalProtein += entry.protein || 0;
+      totalCarbs += entry.carbs || 0;
+      totalFat += entry.fat || 0;
+      
+      // Add to meal group
+      if (entry.mealType && mealGroups[entry.mealType]) {
         mealGroups[entry.mealType].push(entry);
-        
-        // Add to meal totals
         mealTotals[entry.mealType] += entry.calories || 0;
       }
-      
-      // Add to total macros
-      totalMacros.calories += entry.calories || 0;
-      totalMacros.protein += entry.protein || 0;
-      totalMacros.carbs += entry.carbs || 0;
-      totalMacros.fat += entry.fat || 0;
     });
     
+    // Return the response in the expected format
     return NextResponse.json({
-      totalCalories: totalMacros.calories,
-      totalProtein: totalMacros.protein,
-      totalCarbs: totalMacros.carbs,
-      totalFat: totalMacros.fat,
+      totalCalories,
+      totalProtein,
+      totalCarbs,
+      totalFat,
       mealGroups,
       mealTotals,
-      entries: foodEntries.docs
-    }, { status: 200 });
+      entries,
+      // Add totals property to match the expected structure in the dashboard
+      totals: {
+        calories: totalCalories,
+        protein: totalProtein,
+        carbs: totalCarbs,
+        fat: totalFat
+      }
+    });
   } catch (error) {
     console.error('Error fetching food entries:', error);
     return NextResponse.json(
@@ -504,13 +519,14 @@ async function getHistoricalData(req: NextRequest) {
       depth: 0, // Don't populate references
     });
     
-    // Group by date
+    // Group by date - using the full ISO string to preserve timezone information
     const entriesByDate: Record<string, FoodEntry[]> = {};
     
     // Process each food entry
     foodEntries.docs.forEach((entry: FoodEntry) => {
-      // Get the date part only (YYYY-MM-DD)
-      const dateStr = new Date(entry.date).toISOString().split('T')[0];
+      // Extract just the date part (YYYY-MM-DD) for grouping
+      const date = new Date(entry.date);
+      const dateStr = date.toISOString().split('T')[0];
       
       // Initialize date group if it doesn't exist
       if (!entriesByDate[dateStr]) {
@@ -536,21 +552,18 @@ async function getHistoricalData(req: NextRequest) {
       totals.fat += entry.fat || 0;
     });
     
-    // Format pagination data
-    const pagination = {
-      totalDocs: foodEntries.totalDocs,
-      totalPages: foodEntries.totalPages,
-      page: foodEntries.page,
-      prevPage: foodEntries.prevPage,
-      nextPage: foodEntries.nextPage,
-      hasPrevPage: foodEntries.hasPrevPage,
-      hasNextPage: foodEntries.hasNextPage
-    };
-    
     return NextResponse.json({
       entries: foodEntries.docs,
       entriesByDate,
-      pagination,
+      pagination: {
+        totalDocs: foodEntries.totalDocs,
+        totalPages: foodEntries.totalPages,
+        page: foodEntries.page,
+        prevPage: foodEntries.prevPage,
+        nextPage: foodEntries.nextPage,
+        hasPrevPage: foodEntries.hasPrevPage,
+        hasNextPage: foodEntries.hasNextPage
+      },
       totals
     }, { status: 200 });
   } catch (error) {
