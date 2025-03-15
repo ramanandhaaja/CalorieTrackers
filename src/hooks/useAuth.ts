@@ -64,6 +64,14 @@ export function useAuth() {
           'Content-Type': 'application/json'
         }
       })
+      
+      // Manually clear the cookies on the client side
+      document.cookie = 'payload-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
+      // Clear any other auth-related cookies
+      document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
       setUser(null)
       router.push('/login')
       router.refresh()
