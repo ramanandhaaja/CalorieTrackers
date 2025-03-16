@@ -3,48 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { FoodEntry } from '../../../payload-types';
 import config from '@/payload.config';
 import { getCurrentUser } from '@/lib/auth';
-
-// Helper function to get today's date range in the user's timezone
-export function getTodayDateRange() {
-  // Use the current date in the user's timezone
-  const now = new Date();
-  
-  // Create start of day in user's timezone
-  const startOfDay = new Date(now);
-  startOfDay.setHours(0, 0, 0, 0);
-  
-  // Create end of day in user's timezone
-  const endOfDay = new Date(now);
-  endOfDay.setHours(23, 59, 59, 999);
-  
-  return {
-    startOfDay: startOfDay.toISOString(),
-    endOfDay: endOfDay.toISOString()
-  };
-}
-
-// Helper function to get this week's date range
-export function getWeekDateRange() {
-  const now = new Date();
-  
-  // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
-  const dayOfWeek = now.getDay();
-  
-  // Calculate the start of the week (Sunday)
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - dayOfWeek);
-  startOfWeek.setHours(0, 0, 0, 0);
-  
-  // Calculate the end of the week (Saturday)
-  const endOfWeek = new Date(now);
-  endOfWeek.setDate(now.getDate() + (6 - dayOfWeek));
-  endOfWeek.setHours(23, 59, 59, 999);
-  
-  return {
-    startOfWeek: startOfWeek.toISOString(),
-    endOfWeek: endOfWeek.toISOString()
-  };
-}
+import { getTodayDateRange, getWeekDateRange, getDateRange, groupEntriesByDate } from '@/lib/date-utils';
 
 // This is a Next.js App Router API route
 export async function POST(req: NextRequest) {

@@ -3,18 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { WaterEntry } from '../../../payload-types';
 import config from '@/payload.config';
 import { getCurrentUser } from '@/lib/auth';
-
-// Helper function to get the start and end of today
-function getTodayDateRange() {
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  
-  return {
-    startOfDay: startOfDay.toISOString(),
-    endOfDay: endOfDay.toISOString()
-  };
-}
+import { getTodayDateRange } from '@/lib/date-utils';
 
 // This is a Next.js App Router API route
 export async function POST(req: NextRequest) {
