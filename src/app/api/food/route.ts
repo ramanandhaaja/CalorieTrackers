@@ -178,6 +178,11 @@ export async function GET(req: NextRequest) {
     const timeframe = url.searchParams.get('timeframe') || 'today';
     const period = url.searchParams.get('period');
     
+    // Get client timezone information if provided
+    const clientTimestamp = url.searchParams.get('_t');
+    const clientTimezone = url.searchParams.get('timezone');
+    console.log('Client timezone info:', { clientTimestamp, clientTimezone });
+    
     // If period is 'historical', use the historical data handler
     if (period === 'historical') {
       return getHistoricalData(req);
@@ -191,8 +196,13 @@ export async function GET(req: NextRequest) {
     let dateQuery: any = {};
     
     if (timeframe === 'today') {
+      // Get today's date range
       const { startOfDay, endOfDay } = getTodayDateRange();
-      console.log('Fetching food entries for today:', { startOfDay, endOfDay });
+      console.log('Fetching food entries for today:', { 
+        startOfDay, 
+        endOfDay,
+        clientTimezone: clientTimezone || 'not provided' 
+      });
       dateQuery = {
         date: {
           greater_than_equal: startOfDay,

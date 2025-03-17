@@ -142,10 +142,29 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
     // Format the date with proper timezone handling
     const formatEntryDate = (dateString: string) => {
       try {
-        // Create a Date object from the ISO string to properly handle timezone
+        // Create a Date object from the ISO string
         const date = new Date(dateString);
         
-        // Format the date with the user's local timezone
+        // Get today's date ranges in the user's timezone
+        const now = new Date();
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(now);
+        todayEnd.setHours(23, 59, 59, 999);
+        
+        // Check if the entry date is from today (in user's timezone)
+        const isToday = date >= todayStart && date <= todayEnd;
+        
+        // If it's today's entry, just show the time
+        if (isToday) {
+          return date.toLocaleString('en-US', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+          });
+        }
+        
+        // Otherwise, show the full date and time
         return date.toLocaleString('en-US', {
           month: 'short',
           day: 'numeric',

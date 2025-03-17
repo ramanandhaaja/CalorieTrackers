@@ -11,6 +11,14 @@ export function getTodayDateRange() {
   const endOfDay = new Date(now);
   endOfDay.setHours(23, 59, 59, 999);
   
+  // Log the date range for debugging
+  console.log('Today date range (local):', {
+    now: now.toISOString(),
+    startOfDay: startOfDay.toISOString(),
+    endOfDay: endOfDay.toISOString(),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  });
+  
   return {
     startOfDay: startOfDay.toISOString(),
     endOfDay: endOfDay.toISOString()
