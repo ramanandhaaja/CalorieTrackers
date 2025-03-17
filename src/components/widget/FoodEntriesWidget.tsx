@@ -142,7 +142,10 @@ export default function FoodEntriesWidget({ onFoodEntriesUpdated }: FoodEntriesW
     // Format the date with proper timezone handling
     const formatEntryDate = (dateString: string) => {
       try {
+        // Create a Date object from the ISO string to properly handle timezone
         const date = new Date(dateString);
+        
+        // Format the date with the user's local timezone
         return date.toLocaleString('en-US', {
           month: 'short',
           day: 'numeric',

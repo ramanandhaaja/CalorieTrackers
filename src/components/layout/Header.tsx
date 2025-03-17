@@ -52,8 +52,18 @@ const Header = () => {
             </nav>
             <div className="flex items-center space-x-4">
               {loading ? (
-                // Show loading state
-                <div className="h-10 w-24 bg-gray-200 animate-pulse rounded-md"></div>
+                // Show login/register buttons as default while loading
+                <>
+                  <Link
+                    href="/login"
+                    className="text-white hover:text-gray-200 transition-colors"
+                  >
+                    Login
+                  </Link>
+                  <Button asChild variant="default" className="bg-green-600 hover:bg-green-700 text-white">
+                    <Link href="/register">Register</Link>
+                  </Button>
+                </>
               ) : isLoggedIn ? (
                 <Button asChild variant="default" className="bg-green-600 hover:bg-green-700 text-white">
                   <Link href="/dashboard">Dashboard</Link>
@@ -136,8 +146,23 @@ const Header = () => {
                   </div>
                   <div className="grid gap-3 mt-6">
                     {loading ? (
-                      // Show loading state
-                      <div className="h-10 w-full bg-gray-200 animate-pulse rounded-md"></div>
+                      // Show login/register buttons as default while loading
+                      <>
+                        <Link 
+                          href="/login" 
+                          className="text-gray-800 hover:text-green-600 transition-colors text-lg font-medium"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Login
+                        </Link>
+                        <Button 
+                          asChild 
+                          className="bg-green-600 text-white hover:bg-green-700 w-full mt-2"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <Link href="/register">Register</Link>
+                        </Button>
+                      </>
                     ) : isLoggedIn ? (
                       <Button 
                         asChild 

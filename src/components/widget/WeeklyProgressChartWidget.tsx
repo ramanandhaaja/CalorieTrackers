@@ -208,6 +208,53 @@ const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({
     barPercentage: 0.6,
   };
 
+  // Chart.js data
+  const chartData = {
+    labels: weekDates.map((date, index) => {
+      const day = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index];
+      
+      // Format this date for comparison
+      const dateFormatted = date.getFullYear() + '-' + 
+        String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(date.getDate()).padStart(2, '0');
+      
+      // Add a special marker for today's date
+      const label = dateFormatted === todayFormatted
+        ? `${day} ( ${date.getDate()}* )` 
+        : `${day} ( ${date.getDate()} )`;
+      return label;
+    }),
+    datasets: [
+      {
+        label: 'Calories',
+        // Only show data for days up to the current day of the week
+        data: displayData.map((value, index) => {
+          // If this day is in the future (after today), return null or 0
+          const isInFuture = weekDates[index] > today;
+          return isInFuture ? 0 : value; // Use 0 instead of null for type compatibility
+        }),
+        backgroundColor: weekDates.map(date => 
+          isToday(date) ? 'rgba(59, 130, 246, 0.9)' : 'rgba(59, 130, 246, 0.5)'
+        ),
+        borderColor: 'rgba(59, 130, 246, 0.8)',
+        borderWidth: 1,
+        borderRadius: 4,
+        type: 'bar' as const,
+      },
+      {
+        label: 'Target',
+        data: Array(7).fill(2000), // Daily target of 2000 calories
+        borderColor: 'rgba(34, 197, 94, 0.7)',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        fill: false,
+        pointRadius: 0,
+        order: 0,
+        type: 'line' as const,
+      }
+    ],
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="border-b border-gray-100 px-5 py-4 flex justify-between items-center">
@@ -242,46 +289,7 @@ const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({
           )}
           <Chart
             type='bar'
-            data={{
-              labels: weekDates.map((date, index) => {
-                const day = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index];
-                
-                // Format this date for comparison
-                const dateFormatted = date.getFullYear() + '-' + 
-                  String(date.getMonth() + 1).padStart(2, '0') + '-' + 
-                  String(date.getDate()).padStart(2, '0');
-                
-                // Add a special marker for today's date
-                const label = dateFormatted === todayFormatted
-                  ? `${day} ( ${date.getDate()}* )` 
-                  : `${day} ( ${date.getDate()} )`;
-                return label;
-              }),
-              datasets: [
-                {
-                  label: 'Calories',
-                  data: displayData, // Use actual calorie values
-                  backgroundColor: weekDates.map(date => 
-                    isToday(date) ? 'rgba(59, 130, 246, 0.9)' : 'rgba(59, 130, 246, 0.5)'
-                  ),
-                  borderColor: 'rgba(59, 130, 246, 0.8)',
-                  borderWidth: 1,
-                  borderRadius: 4,
-                  type: 'bar',
-                },
-                {
-                  label: 'Target',
-                  data: Array(7).fill(2000), // Daily target of 2000 calories
-                  type: 'line',
-                  borderColor: 'rgba(34, 197, 94, 0.7)',
-                  borderWidth: 2,
-                  borderDash: [5, 5],
-                  fill: false,
-                  pointRadius: 0,
-                  order: 0,
-                }
-              ],
-            }}
+            data={chartData}
             options={chartOptions}
           />
         </div>
