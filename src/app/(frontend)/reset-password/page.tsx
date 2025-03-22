@@ -1,9 +1,13 @@
+import Header from "../../../components/layout/Header";
+import Footer from "../../../components/layout/Footer";
 import ResetPasswordForm from "@/components/layout/ResetPasswordForm";
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="flex flex-col min-h-screen mt-32">
+      <Header />
+
+      <div className="flex-grow container mx-auto px-4 py-12 max-w-md">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Reset your password
@@ -14,6 +18,8 @@ export default function ResetPasswordPage() {
         </div>
         <ResetPasswordForm />
       </div>
+
+      <Footer />
     </div>
   );
 }
