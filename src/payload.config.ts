@@ -6,6 +6,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+import { resendAdapter } from '@payloadcms/email-resend'
 
 import Logo from './components/admin/Logo'
 import { Users } from './collections/Users'
@@ -19,6 +20,12 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  email: resendAdapter({
+    apiKey: process.env.RESEND_API_KEY || '',
+    defaultFromAddress: 'noreply@mail.codefoundry.co.id',
+    defaultFromName: 'CalorieTrackers',
+  }),
   admin: {
     user: Users.slug,
     importMap: {
@@ -30,7 +37,7 @@ export default buildConfig({
       },
     },
   },
-  collections: [Menu, Media, Users, Water, Food, UserDetails],
+
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -42,6 +49,14 @@ export default buildConfig({
     },
   }),
   sharp,
+  collections: [
+    Users,
+    Media,
+    Menu,
+    Water,
+    Food,
+    UserDetails,
+  ],
   plugins: [
     payloadCloudPlugin(),
     // storage-adapter-placeholder

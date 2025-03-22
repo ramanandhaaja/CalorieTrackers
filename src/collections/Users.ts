@@ -34,6 +34,24 @@ export const Users: CollectionConfig = {
   auth: {
     // Allow users to register themselves
     useAPIKey: false,
+    forgotPassword: {
+      generateEmailHTML: (args) => {
+        const { token, user } = args || {};
+        // Ensure serverURL is set in the Payload config
+        const resetPasswordURL = `${process.env.NEXT_PUBLIC_SERVER_URL}/reset-password?token=${token}`;
+
+        return `
+          <h1>Reset Your Password</h1>
+          <p>Hello ${user.fullName || 'there'},</p>
+          <p>You recently requested to reset your password for your CalorieTrackers account. Click the button below to reset it:</p>
+          <a href="${resetPasswordURL}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
+            Reset Password
+          </a>
+          <p>If you did not request a password reset, please ignore this email or contact support if you have questions.</p>
+          <p>This password reset link will expire in 1 hour.</p>
+        `;
+      },
+    },
   },
   fields: [
     // Email added by default by the auth feature
