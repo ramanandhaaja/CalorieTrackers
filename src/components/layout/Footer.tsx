@@ -117,7 +117,7 @@ const Footer = () => {
           <div className="md:col-span-4 flex flex-col justify-between">
             <div>
               <div className="text-2xl font-semibold text-gray-800 mb-2">
-                CalorieTracker<sup className="text-xs">AI</sup>
+                FitCount<sup className="text-xs">AI</sup>
               </div>
               <p className="text-gray-600 mb-6">
                 Track your nutrition with AI precision. Take photos of your food or enter details manually to monitor

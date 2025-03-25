@@ -27,7 +27,7 @@ const Header = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="text-white text-2xl font-semibold">
-            CalorieTracker<sup className="text-xs">AI</sup>
+            FitCount<sup className="text-xs">AI</sup>
           </div>
 
           {/* Navigation */}
