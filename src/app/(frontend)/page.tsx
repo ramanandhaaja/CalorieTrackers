@@ -43,9 +43,6 @@ export default async function HomePage() {
       {/* Testimonials Section */}
       <Testimonials />
 
-      {/* Pricing Section */}
-      <Pricing />
-
       {/* Gallery Section 
       <Gallery /> */}
 

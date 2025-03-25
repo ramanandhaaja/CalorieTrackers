@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
     
     // Get the generative model (using gemini-2.0-pro-vision for image analysis)
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    //const model = genAI.getGenerativeModel({ model: 'gemma-3-27b-it' });
 
     // Convert the file to a byte array
     const bytes = await imageFile.arrayBuffer();

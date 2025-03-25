@@ -36,7 +36,9 @@ export async function POST(request: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     
     // Get the generative model (using gemini-1.5-flash for faster responses)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    //const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemma-3-27b-it' });
+
 
     // Create the prompt for nutritional analysis
     const prompt = `
