@@ -1,6 +1,7 @@
 import Header from "../../../components/layout/Header";
 import Footer from "../../../components/layout/Footer";
 import ResetPasswordForm from "@/components/layout/ResetPasswordForm";
+import { Suspense } from 'react';
 
 export default function ResetPasswordPage() {
   return (
@@ -16,7 +17,9 @@ export default function ResetPasswordPage() {
             Enter your new password below.
           </p>
         </div>
-        <ResetPasswordForm />
+        <Suspense fallback={<div className="text-center">Loading...</div>}>
+          <ResetPasswordForm />
+        </Suspense>
       </div>
 
       <Footer />
