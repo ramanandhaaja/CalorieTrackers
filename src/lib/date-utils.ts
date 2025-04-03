@@ -29,18 +29,31 @@ export function getTodayDateRange() {
 export function getWeekDateRange() {
   const now = new Date();
   
-  // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
+  // Get the day of the week (1 = Monday, 2 = Tuesday, etc., 0 = Sunday)
   const dayOfWeek = now.getDay();
   
-  // Calculate the start of the week (Sunday)
+  // Convert Sunday (0) to 7 for easier calculation
+  const adjustedDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
+  
+  // Calculate the start of the week (Monday)
   const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - dayOfWeek);
+  startOfWeek.setDate(now.getDate() - (adjustedDayOfWeek - 1));
   startOfWeek.setHours(0, 0, 0, 0);
   
-  // Calculate the end of the week (Saturday)
-  const endOfWeek = new Date(now);
-  endOfWeek.setDate(now.getDate() + (6 - dayOfWeek));
+  // Calculate the end of the week (Sunday)
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
   endOfWeek.setHours(23, 59, 59, 999);
+  
+  // Log the date range for debugging
+  console.log('Week date range:', {
+    now: now.toISOString(),
+    dayOfWeek: dayOfWeek,
+    adjustedDayOfWeek: adjustedDayOfWeek,
+    startOfWeek: startOfWeek.toISOString(),
+    endOfWeek: endOfWeek.toISOString(),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  });
   
   return {
     startOfWeek: startOfWeek.toISOString(),
