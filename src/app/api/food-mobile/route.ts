@@ -108,12 +108,18 @@ async function getWeeklyData(userId: string) {
     // Get week's date range (last 7 days including today)
     const { startOfWeek, endOfWeek } = getWeekDateRange();
 
+    console.log('API: Fetching weekly data:', {
+      userId: Number(userId),
+      startOfWeek,
+      endOfWeek,
+    });
+
     // Get food entries for the week
     const foodEntries = await payload.find({
       collection: 'food-entries',
       where: {
         user: {
-          equals: userId
+          equals: Number(userId) // Convert string userId to number
         },
         date: {
           greater_than_equal: startOfWeek,
@@ -123,79 +129,36 @@ async function getWeeklyData(userId: string) {
       sort: '-date'
     });
 
+    console.log('API: Found entries:', {
+      totalDocs: foodEntries.totalDocs,
+      dates: foodEntries.docs.map(doc => doc.date),
+    });
+
     if (!foodEntries.docs || foodEntries.docs.length === 0) {
       return NextResponse.json({
         entries: [],
-        dailyData: {},
-        weeklyTotals: {
+        totalMacros: {
           calories: 0,
           protein: 0,
           carbs: 0,
           fat: 0
         },
-        dailyAverage: 0,
-        calorieValues: Array(7).fill(0)
+        totalCount: 0
       });
     }
 
-    // Group entries by date and calculate daily totals
-    const dailyData: DailyData = {};
-    foodEntries.docs.forEach((entry: FoodEntry) => {
-      const date = new Date(entry.date).toISOString().split('T')[0];
-      if (!dailyData[date]) {
-        dailyData[date] = {
-          entries: [],
-          totalMacros: {
-            calories: 0,
-            protein: 0,
-            carbs: 0,
-            fat: 0
-          }
-        };
-      }
-      dailyData[date].entries.push(entry);
-      if (dailyData[date].totalMacros) {
-        dailyData[date].totalMacros.calories += entry.calories || 0;
-        dailyData[date].totalMacros.protein += entry.protein || 0;
-        dailyData[date].totalMacros.carbs += entry.carbs || 0;
-        dailyData[date].totalMacros.fat += entry.fat || 0;
-      }
-    });
-
-    // Calculate weekly totals
-    const weeklyTotals: MacroTotals = foodEntries.docs.reduce(
-      (acc: MacroTotals, entry: FoodEntry) => ({
-        calories: acc.calories + (entry.calories || 0),
-        protein: acc.protein + (entry.protein || 0),
-        carbs: acc.carbs + (entry.carbs || 0),
-        fat: acc.fat + (entry.fat || 0)
-      }),
-      { calories: 0, protein: 0, carbs: 0, fat: 0 }
-    );
-
-    // Calculate daily average calories
-    const dailyAverage = Math.round(weeklyTotals.calories / 7);
-
-    // Get dates for the last 7 days
-    const dates = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      return date.toISOString().split('T')[0];
-    }).reverse();
-
-    // Create calorie values array for the chart
-    const calorieValues = dates.map(date => {
-      const dayData = dailyData[date];
-      if (!dayData) return 0;
-      return dayData.entries.reduce((sum: number, entry: FoodEntry) => sum + (entry.calories || 0), 0);
-    });
+    // Calculate total macros
+    const totalMacros = foodEntries.docs.reduce((acc, entry) => ({
+      calories: acc.calories + (entry.calories || 0),
+      protein: acc.protein + (entry.protein || 0),
+      carbs: acc.carbs + (entry.carbs || 0),
+      fat: acc.fat + (entry.fat || 0)
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
 
     return NextResponse.json({
       entries: foodEntries.docs,
-      dailyData,
-      weeklyTotals,
-      dailyAverage,
-      calorieValues
+      totalMacros,
+      totalCount: foodEntries.totalDocs
     });
 
   } catch (error) {
