@@ -112,26 +112,47 @@ async function getWeeklyData(userId: string) {
       userId: Number(userId),
       startOfWeek,
       endOfWeek,
+      query: {
+        'user.equals': Number(userId),
+        'date.greater_than_equal': startOfWeek,
+        'date.less_than_equal': endOfWeek,
+      }
     });
 
     // Get food entries for the week
     const foodEntries = await payload.find({
       collection: 'food-entries',
       where: {
-        user: {
-          equals: Number(userId) // Convert string userId to number
-        },
-        date: {
-          greater_than_equal: startOfWeek,
-          less_than_equal: endOfWeek
-        }
+        and: [
+          {
+            user: {
+              equals: Number(userId)
+            }
+          },
+          {
+            date: {
+              greater_than_equal: startOfWeek,
+              less_than_equal: endOfWeek
+            }
+          }
+        ]
       },
+      depth: 1,
       sort: '-date'
     });
 
     console.log('API: Found entries:', {
       totalDocs: foodEntries.totalDocs,
-      dates: foodEntries.docs.map(doc => doc.date),
+      dates: foodEntries.docs.map(doc => new Date(doc.date).toISOString()),
+      where: {
+        and: [
+          { 'user.equals': Number(userId) },
+          { 
+            'date.greater_than_equal': startOfWeek,
+            'date.less_than_equal': endOfWeek
+          }
+        ]
+      }
     });
 
     if (!foodEntries.docs || foodEntries.docs.length === 0) {
@@ -163,6 +184,7 @@ async function getWeeklyData(userId: string) {
 
   } catch (error) {
     console.error('Error fetching weekly food data:', error);
+    console.error('Error details:', error instanceof Error ? error.stack : error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
